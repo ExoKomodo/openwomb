@@ -11,6 +11,9 @@
     <!--<DefineConstants>$(DefineConstants);INLINE_LOGGER</DefineConstants>-->
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="../LICENSE">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="../ThirdParty/**/*.LICENSE">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
