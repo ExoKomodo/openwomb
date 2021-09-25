@@ -1,5 +1,6 @@
 open Argu
 open Komodo
+open Komodo.Graphics
 open System
 
 let DEFAULT_WIDTH = 800u
@@ -15,6 +16,42 @@ type CliArguments =
       | Width _ -> $"set the initial display width (default: %d{DEFAULT_WIDTH})"
       | Height _ -> $"set the initial display height (default: %d{DEFAULT_HEIGHT})"
 
+let mutable private primitive =
+  Primitives.ShadedObject.from
+    { Primitives.ShadedObject.Default with
+        FragmentShaderPath = "Resources/Shaders/fragment.glsl"
+        VertexShaderPath = "Resources/Shaders/vertex.glsl" }
+    [|
+      0.0f; -0.5f; 0.0f;  // shared vertex
+      // first triangle
+      -0.9f; -0.5f; 0.0f; // left vertex
+      -0.45f; 0.5f; 0.0f; // top vertex
+      // second triangle
+      0.9f; -0.5f; 0.0f;  // right vertex
+      0.45f; 0.5f; 0.0f;  // top vertex
+    |]
+    [|
+      0u; 1u; 2u; // first triangle vertex order as array indices
+      0u; 3u; 4u; // second triangle vertex order as array indices
+    |]
+
+let private initHandler config =
+  match Display.compileShader primitive.VertexShaderPath primitive.FragmentShaderPath with
+  | Some(shader) -> 
+      primitive <-
+        { primitive with
+            Shader = shader
+            VertexData = Primitives.VertexObjectData.from primitive.Vertices primitive.Indices }
+      config
+  | None ->
+      Logging.fail "Failed to compile shader"
+      config
+
+let private drawHandler config =
+  let config = Display.clear config
+  Primitives.drawShadedObject primitive
+  Display.swap config
+
 [<EntryPoint>]
 let main argv =
   let errorHandler =
@@ -22,15 +59,15 @@ let main argv =
       colorizer=function
         | ErrorCode.HelpText -> None
         | _ -> Some ConsoleColor.Red )
-  let results =
+  let parsedArgs =
     ArgumentParser.Create<CliArguments>(programName="Playground", errorHandler=errorHandler).Parse argv
 
-  let width = results.GetResult(Width, DEFAULT_WIDTH)
-  let height = results.GetResult(Height, DEFAULT_HEIGHT)
+  let width = parsedArgs.GetResult(Width, DEFAULT_WIDTH)
+  let height = parsedArgs.GetResult(Height, DEFAULT_HEIGHT)
 
   ( Game.play
       "Komodo Playground"
       width
       height
-      "Resources/Shaders/fragment.glsl"
-      "Resources/Shaders/vertex.glsl" ).ExitCode
+      (Some initHandler)
+      (Some drawHandler) ).ExitCode

@@ -1,9 +1,7 @@
 module Komodo.Graphics.Display
 
-open Komodo.Backends.OpenGL
 open Komodo.Backends.OpenGL.Api
 open Komodo.Backends.OpenGL.Api.Constants
-open Komodo.Backends.OpenGL.Api.Common
 open Komodo.Logging
 
 ///////////
@@ -19,15 +17,7 @@ type Config =
     IsFullscreen: bool;
     WindowFlags: SDL.SDL_WindowFlags;
     Window: nativeint;
-    Context: nativeint;
-    VAO: uint;
-    VBO: uint;
-    EBO: uint;
-    Shader: uint;
-    Vertices: array<single>;
-    Indices: array<uint>;
-    FragmentShaderPath: string
-    VertexShaderPath: string }
+    Context: nativeint; }
 
     static member Default =
       { Width = 800u
@@ -36,71 +26,13 @@ type Config =
         IsFullscreen = false
         WindowFlags = SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN
         Window = 0n
-        Context = 0n
-        VAO = 0u
-        VBO = 0u
-        EBO = 0u
-        Shader = 0u
-        Vertices = [|
-          0.0f; -0.5f; 0.0f;  // shared
-          // first triangle
-          -0.9f; -0.5f; 0.0f;  // left 
-          -0.45f; 0.5f; 0.0f;  // top 
-          // second triangle
-          0.9f; -0.5f; 0.0f;  // right
-          0.45f; 0.5f; 0.0f;   // top 
-        |]
-        Indices = [|
-          0u; 1u; 2u;   // first triangle
-          0u; 3u; 4u;    // second triangle
-        |]
-        FragmentShaderPath = ""
-        VertexShaderPath = "" }
+        Context = 0n }
 
 ////////////C
 // Module //
 ////////////
 
-open Komodo.Backends.OpenGL
 open System.IO
-
-let private createVertexObjects config =
-  let vao = glGenVertexArray()
-  let vbo = glGenBuffer()
-  let ebo = glGenBuffer()
-  let vertices = config.Vertices
-  let indices = config.Indices
-  
-  glBindVertexArray vao
-  
-  glBindBuffer
-    GL_ARRAY_BUFFER
-    vbo
-  glBufferData<single>
-    GL_ARRAY_BUFFER
-    vertices
-    GL_STATIC_DRAW
-
-  glBindBuffer
-    GL_ELEMENT_ARRAY_BUFFER
-    ebo
-  glBufferData
-    GL_ELEMENT_ARRAY_BUFFER
-    indices
-    GL_STATIC_DRAW
-  
-  glVertexAttribPointer
-    0u
-    3u
-    GL_FLOAT
-    false
-    3
-    0
-  glEnableVertexAttribArray 0u
-  { config with
-      VAO = vao
-      VBO = vbo
-      EBO = ebo }
 
 let private shaderTypeToString shaderType =
   match shaderType with
@@ -108,7 +40,7 @@ let private shaderTypeToString shaderType =
   | GL_FRAGMENT_SHADER -> "fragment"
   | _ -> "unknown"
 
-let private compileShader
+let private buildShader
   shaderType
   shaderSource =
     let shaderTypeString = shaderTypeToString shaderType
@@ -155,29 +87,28 @@ let private linkShaderProgram vertexShader fragmentShader =
   else
     Some(shaderProgram)
 
-let private compileShaders config =
-  let vertexShaderSource = File.ReadAllText(config.VertexShaderPath)
-  let fragmentShaderSource = File.ReadAllText(config.FragmentShaderPath)
+let compileShader vertexShaderPath fragmentShaderPath =
+  let vertexShaderSource = File.ReadAllText(vertexShaderPath)
+  let fragmentShaderSource = File.ReadAllText(fragmentShaderPath)
   let vertexShaderOpt =
-    compileShader GL_VERTEX_SHADER vertexShaderSource
+    buildShader GL_VERTEX_SHADER vertexShaderSource
   let fragmentShaderOpt =
-    compileShader GL_FRAGMENT_SHADER fragmentShaderSource
+    buildShader GL_FRAGMENT_SHADER fragmentShaderSource
 
   match (vertexShaderOpt, fragmentShaderOpt) with
   | Some(vertexShader), Some(fragmentShader) ->
     match linkShaderProgram vertexShader fragmentShader with
     | Some(shaderProgram) ->
-        { config with
-            Shader = shaderProgram }
-    | None -> config // TODO: Hard failure
-  | _ -> config // TODO: Hard failure
+        Some(shaderProgram)
+    | None -> None 
+  | _ -> None
 
 let private initializeGraphicsContext config =
   debug "BEGIN graphics context initialization"
   let context = SDL.SDL_GL_CreateContext(config.Window)
   SDL.SDL_GL_MakeCurrent(config.Window, context)
     |> ignore
-  setup SDL.SDL_GL_GetProcAddress
+  Komodo.Backends.OpenGL.Module.setup SDL.SDL_GL_GetProcAddress
   debug "END graphics context initialization"
   
   let vendor =
@@ -312,26 +243,6 @@ let clear config =
     GL_COLOR_BUFFER_BIT
   config
 
-let drawObject vao ebo shader (indices:array<uint>) =
-  glUseProgram shader
-  glBindVertexArray vao
-  glBindBuffer
-    GL_ELEMENT_ARRAY_BUFFER
-    ebo
-  glDrawElements
-    GL_TRIANGLES
-    indices.Length
-    GL_UNSIGNED_INT
-    GL_NULL
-
-let draw config =
-  drawObject
-    config.VBO
-    config.EBO
-    config.Shader
-    config.Indices
-  config
-
 let initialize config =
   debug
     $"BEGIN graphics initialization for %s{config.Title} with %d{config.Width} by %d{config.Height}"
@@ -343,10 +254,7 @@ let initialize config =
     debug "END graphics initialization"
     Some(
       initializeWindow config 
-      |> initializeGraphicsContext
-      |> compileShaders
-      |> createVertexObjects
-    )
+      |> initializeGraphicsContext )
 
 let shutdown config =
   config

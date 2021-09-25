@@ -11,12 +11,16 @@
     <!--<DefineConstants>$(DefineConstants);INLINE_LOGGER</DefineConstants>-->
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="..\docs\Planning.md" />
+    <Content Include="../docs/*.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="../LICENSE">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="../ThirdParty/**/*.LICENSE">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Content Include="..\ThirdParty\SDL2\SDL2-CS.LICENSE" />
+    <ProjectReference Include="..\ThirdParty\SDL2\SDL2Bindings.csproj" />
+    <Content Include="..\ThirdParty\OpenGL\ltp_OpenGL.LICENSE" />
     <Compile Include="Logging.fs" />
     <Compile Include="Backends/OpenGL/Api/Constants/OpenGL1_0.fs" />
     <Compile Include="Backends/OpenGL/Api/Constants/OpenGL1_1.fs" />
@@ -44,12 +48,15 @@
     <Compile Include="Backends/OpenGL/Api/OpenGL3_2.fs" />
     <Compile Include="Backends/OpenGL/Api/OpenGL3_3.fs" />
     <Compile Include="Backends/OpenGL/Module.fs" />
+    <Compile Include="Graphics/Primitives.fs" />
     <Compile Include="Graphics/Display.fs" />
     <Compile Include="Engine/Internals.fs" />
     <Compile Include="Game.fs" />
-    <ProjectReference Include="..\ThirdParty\SDL2\SDL2Bindings.csproj" />
     <PackageReference Include="FSharp.Core" Version="5.0.2">
       <GeneratePathProperty></GeneratePathProperty>
     </PackageReference>
+    <Content Include="../ThirdParty/**/*.LICENSE">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

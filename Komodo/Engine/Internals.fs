@@ -63,12 +63,10 @@ let internal handleEvent config (event:SDL.SDL_Event) =
 // Module //
 ////////////
 
-let private drawLoop config =
+let private drawLoop (drawHandler:Display.Config -> Display.Config) config =
   { config with
       DisplayConfig =
-        Display.clear config.DisplayConfig
-        |> Display.draw
-        |> Display.swap }
+        drawHandler config.DisplayConfig }
 
 let rec private eventLoop config =
   let mutable event = SDL.SDL_Event()
@@ -83,12 +81,26 @@ let internal shutdown (config: Config) : Config =
   SDL.SDL_Quit()
   stop config
 
-let internal updateDefault (config:Config) : Config =
-  eventLoop config |> drawLoop
+let drawBegin (config:Display.Config) =
+  Display.clear config
+
+let drawEnd (config:Display.Config) =
+  Display.swap config
+
+let internal drawHandlerDefault (config:Display.Config) =
+  Display.clear config
+  |> Display.swap
+
+let internal initHandlerDefault (config:Config) : Config =
+  config
+
+let internal updateDefault
+  (drawHandler:Display.Config -> Display.Config)
+  (config:Config) : Config =
+    eventLoop config |> drawLoop drawHandler
 
 let rec internal updateLoop (updateImpl:Config -> Config) (config:Config) : Config =
   if not config.IsRunning then
     config
   else
-    let updated = updateImpl config
-    updateLoop updateImpl updated
+    updateImpl config |> updateLoop updateImpl
