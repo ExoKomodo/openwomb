@@ -1,0 +1,33 @@
+name: Release
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  release:
+    env:
+      VERSION: 0.0.0
+      NUGET_API_SOURCE: https://api.nuget.org/v3/index.json
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Pack Komodo
+      run: |
+        dotnet pack --no-restore --configuration Release -p:PackageVersion=${{ env.VERSION }}.${{ github.run_number }} Komodo
+
+    - name: Publish Package
+      run: dotnet nuget push ./Komodo/bin/Release/Komodo.${{ env.VERSION }}.${{ github.run_number }}.nupkg --api-key ${{ env.NUGET_PUSH_API_KEY }} --source "${{ env.NUGET_API_SOURCE }}"
+      env:
+        NUGET_PUSH_API_KEY: ${{ secrets.NUGET_PUSH_API_KEY }}

@@ -1,0 +1,39 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      max-parallel: 1
+      matrix:
+        configuration: [Debug, Release]
+        os: [ubuntu-latest]
+        # os: [windows-latest, macOS-latest, ubuntu-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build Komodo library [${{ matrix.configuration }}]
+      run: dotnet build --no-restore --configuration ${{ matrix.configuration }} Komodo
+
+    - name: Build Examples/Playground [${{ matrix.configuration }}]
+      run: dotnet build --no-restore --configuration ${{ matrix.configuration }} Examples/Playground
+
+    - name: Test [${{ matrix.configuration }}]
+      run: dotnet test --no-build
+      if: ${{ matrix.configuration }} == 'Debug'

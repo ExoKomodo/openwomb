@@ -1,26 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFrameworks>net5.0</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarnOn>3390;$(WarnOn)</WarnOn>
     <RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 
     <!-- TODO: Make the constants runtime-configurable if possible AND desired -->
     <!--<DefineConstants>$(DefineConstants);DEBUG</DefineConstants>-->
     <!--<DefineConstants>$(DefineConstants);TREAT_OPENGL_LINK_FAILURE_AS_ERROR</DefineConstants>-->
     <!--<DefineConstants>$(DefineConstants);INLINE_LOGGER</DefineConstants>-->
   </PropertyGroup>
+
   <ItemGroup>
-    <Content Include="..\docs\Planning.md" />
+    <None Include="../$(PackageLicenseFile)" Pack="true" PackagePath="$(PackageLicenseFile)"/>
     <Content Include="../docs/*.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="../LICENSE">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\SDL2\SDL2-CS.LICENSE" />
+    
     <ProjectReference Include="..\ThirdParty\SDL2\SDL2Bindings.csproj" />
-    <Content Include="..\ThirdParty\OpenGL\ltp_OpenGL.LICENSE" />
+    
     <Compile Include="Logging.fs" />
     <Compile Include="Backends/OpenGL/Api/Constants/OpenGL1_0.fs" />
     <Compile Include="Backends/OpenGL/Api/Constants/OpenGL1_1.fs" />
