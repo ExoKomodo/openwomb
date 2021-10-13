@@ -20,7 +20,7 @@ let mutable private primitive = Primitives.ShadedObject.Default
 
 let private initHandler config =
   primitive <-
-    Primitives.ShadedObject.from
+    Primitives.ShadedObject.From
       { primitive with
           FragmentShaderPath = "Resources/Shaders/fragment.glsl"
           VertexShaderPath = "Resources/Shaders/vertex.glsl" }
@@ -42,7 +42,7 @@ let private initHandler config =
       primitive <-
         { primitive with
             Shader = shader
-            VertexData = Primitives.VertexObjectData.from primitive.Vertices primitive.Indices }
+            VertexData = Primitives.VertexObjectData.From primitive.Vertices primitive.Indices }
       config
   | None ->
       Logging.fail "Failed to compile shader"

@@ -13,7 +13,7 @@ type VertexObjectData =
         VBO = 0u
         EBO = 0u }
 
-    static member from (vertices) (indices) : VertexObjectData =
+    static member From (vertices) (indices) : VertexObjectData =
       let vao = glGenVertexArray()
       let vbo = glGenBuffer()
       let ebo = glGenBuffer()
@@ -65,11 +65,11 @@ type ShadedObject =
         FragmentShaderPath = ""
         VertexShaderPath = "" }
 
-    static member from (primitive: ShadedObject) (vertices) (indices) : ShadedObject =
+    static member From (primitive: ShadedObject) (vertices) (indices) : ShadedObject =
       { primitive with
           Vertices = vertices
           Indices = indices
-          VertexData = VertexObjectData.from vertices indices }
+          VertexData = VertexObjectData.From vertices indices }
 
 let drawShadedObject (primitive:ShadedObject) =
   glUseProgram primitive.Shader
