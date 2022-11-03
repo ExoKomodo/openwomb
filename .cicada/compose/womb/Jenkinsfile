@@ -8,6 +8,7 @@ pipeline {
 
   environment {
     CICADA_PRD_BRANCH = 'main'
+    CICADA_CI_DIR=".cicada/head/ci"
     CICADA_REGISTRY_PASSWORD = credentials('docker-password')
     CICADA_REGISTRY_USERNAME = credentials('docker-username')
     CICADA_NAME = 'womb'
