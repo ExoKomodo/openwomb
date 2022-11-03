@@ -11,7 +11,7 @@ services:
     build:
       context: .
       dockerfile: ${CICADA_COMPOSE_DIR}/womb/Dockerfile
-    command: bash /app/compose_scripts/build.sh ${DOTNET_BUILD_PROJECT}
+    command: bash /app/compose_scripts/build.sh ${DOTNET_BUILD_PROJECT} ${DOTNET_BUILD_CONFIGURATION}
     volumes:
       - .:/app:rw
   fix_ownership:

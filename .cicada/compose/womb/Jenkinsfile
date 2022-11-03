@@ -31,6 +31,10 @@ pipeline {
 
       stages {
         stage('[womb] build') {
+          environment {
+            DOTNET_BUILD_CONFIGURATION = "Debug"
+          }
+
           steps {
             sh "bash ${CICADA_COMPOSE} womb-build build"
           }
@@ -45,6 +49,10 @@ pipeline {
 
       stages {
         stage('[examples/playground] build') {
+          environment {
+            DOTNET_BUILD_CONFIGURATION = "Debug"
+          }
+
           steps {
             sh "bash ${CICADA_COMPOSE} example-playground-build build"
           }

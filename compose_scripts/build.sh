@@ -2,6 +2,8 @@
 
 PROJECT=$1
 shift
+CONFIGURATION=$1
+shift
 
 dotnet restore
-dotnet build --no-restore --configuration ${DOTNET_BUILD_CONFIGURATION} ${PROJECT}
+dotnet build --no-restore --configuration ${CONFIGURATION} ${PROJECT}
