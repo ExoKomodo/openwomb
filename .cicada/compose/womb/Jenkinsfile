@@ -8,7 +8,6 @@ pipeline {
 
   environment {
     CICADA_PRD_BRANCH = 'main'
-    CICADA_CI_DIR=".cicada/head/ci"
     CICADA_REGISTRY_PASSWORD = credentials('docker-password')
     CICADA_REGISTRY_USERNAME = credentials('docker-username')
     CICADA_NAME = 'womb'
@@ -25,9 +24,31 @@ pipeline {
       }
     }
 
-    stage('build') {
-      steps {
-        sh "bash ${CICADA_COMPOSE} build"
+    stage('womb') {
+      environment {
+        DOTNET_BUILD_PROJECT = "Womb"
+      }
+
+      stages {
+        stage('womb - build') {
+          steps {
+            sh "bash ${CICADA_COMPOSE} build"
+          }
+        }
+      }
+    }
+
+    stage('examples/playground') {
+      environment {
+        DOTNET_BUILD_PROJECT = "Examples/Playground"
+      }
+
+      stages {
+        stage('examples/playground - build') {
+          steps {
+            sh "bash ${CICADA_COMPOSE} build"
+          }
+        }
       }
     }
   }
