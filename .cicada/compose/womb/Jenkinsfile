@@ -32,7 +32,7 @@ pipeline {
       stages {
         stage('[womb] build') {
           steps {
-            sh "bash ${CICADA_COMPOSE} build"
+            sh "bash ${CICADA_COMPOSE} womb-build build"
           }
         }
       }
@@ -46,7 +46,7 @@ pipeline {
       stages {
         stage('[examples/playground] build') {
           steps {
-            sh "bash ${CICADA_COMPOSE} build"
+            sh "bash ${CICADA_COMPOSE} example-playground-build build"
           }
         }
       }
@@ -55,7 +55,7 @@ pipeline {
 
   post {
     always {
-      sh "bash ${CICADA_COMPOSE} fix fix_ownership"
+      sh "bash ${CICADA_COMPOSE} fix-ownership fix_ownership"
     }
 
     cleanup {
