@@ -3,21 +3,21 @@ services:
   test:
     build:
       context: .
-      dockerfile: ${CICADA_COMPOSE_DIR}/womb/Dockerfile
+      dockerfile: ${CICADA_COMPOSE_DIR}/base/Dockerfile
     command: bash /app/compose_scripts/test.sh
     volumes:
       - .:/app:rw
   build:
     build:
       context: .
-      dockerfile: ${CICADA_COMPOSE_DIR}/womb/Dockerfile
+      dockerfile: ${CICADA_COMPOSE_DIR}/base/Dockerfile
     command: bash /app/compose_scripts/build.sh ${DOTNET_BUILD_PROJECT}
     volumes:
       - .:/app:rw
   fix_ownership:
     build:
       context: .
-      dockerfile: ${CICADA_COMPOSE_DIR}/womb/Dockerfile
+      dockerfile: ${CICADA_COMPOSE_DIR}/base/Dockerfile
     command: bash /app/${CICADA_CI_DIR}/fix_ownership.bash
     volumes:
       - .:/app:rw
