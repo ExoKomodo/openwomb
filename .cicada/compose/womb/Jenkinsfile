@@ -1,0 +1,43 @@
+pipeline {
+  agent any
+
+  options {
+    disableConcurrentBuilds()
+    ansiColor('xterm')
+  }
+
+  environment {
+    CICADA_PRD_BRANCH = 'main'
+    CICADA_REGISTRY_PASSWORD = credentials('docker-password')
+    CICADA_REGISTRY_USERNAME = credentials('docker-username')
+    CICADA_NAME = 'womb'
+
+    CICADA_DOCKER_HUB_DEV_PROJECT = 'development'
+    CICADA_DOCKER_HUB_PRD_PROJECT = 'womb'
+    CICADA_DOCKER_HUB_USERNAME = 'exokomodo'
+  }
+
+  stages {
+    stage('docker login') {
+      steps {
+        sh "bash ${CICADA_CI_DIR}/container_login.bash"
+      }
+    }
+
+    stage('build') {
+      steps {
+        sh "bash ${CICADA_COMPOSE} build"
+      }
+    }
+  }
+
+  post {
+    always {
+      sh "bash ${CICADA_COMPOSE} fix fix_ownership"
+    }
+
+    cleanup {
+      sh "bash ${CICADA_CI_DIR}/cleanup.bash"
+    }
+  }
+}

@@ -1,0 +1,3 @@
+[submodule ".cicada/.heda"]
+	path = .cicada/.head
+	url = git@github.com:ExoKomodo/cicada.git
