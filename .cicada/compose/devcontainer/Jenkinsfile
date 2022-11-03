@@ -41,10 +41,6 @@ pipeline {
 	}
 
 	post {
-		always {
-			sh "${CICADA_COMPOSE} fix fix_ownership"
-		}
-
 		cleanup {
 			sh "bash ${CICADA_CI_DIR}/cleanup.bash"
 		}
