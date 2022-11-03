@@ -24,13 +24,13 @@ pipeline {
       }
     }
 
-    stage('womb') {
+    stage('[womb]') {
       environment {
         DOTNET_BUILD_PROJECT = "Womb"
       }
 
       stages {
-        stage('womb - build') {
+        stage('[womb] build') {
           steps {
             sh "bash ${CICADA_COMPOSE} build"
           }
@@ -38,13 +38,13 @@ pipeline {
       }
     }
 
-    stage('examples/playground') {
+    stage('[examples/playground]') {
       environment {
         DOTNET_BUILD_PROJECT = "Examples/Playground"
       }
 
       stages {
-        stage('examples/playground - build') {
+        stage('[examples/playground] build') {
           steps {
             sh "bash ${CICADA_COMPOSE} build"
           }
