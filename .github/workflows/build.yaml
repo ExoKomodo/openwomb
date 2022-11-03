@@ -28,8 +28,8 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
 
-    - name: Build Komodo library [${{ matrix.configuration }}]
-      run: dotnet build --no-restore --configuration ${{ matrix.configuration }} Komodo
+    - name: Build Womb library [${{ matrix.configuration }}]
+      run: dotnet build --no-restore --configuration ${{ matrix.configuration }} Womb
 
     - name: Build Examples/Playground [${{ matrix.configuration }}]
       run: dotnet build --no-restore --configuration ${{ matrix.configuration }} Examples/Playground

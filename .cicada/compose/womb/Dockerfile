@@ -1,3 +1,9 @@
-FROM exokomodo/development:211-cicada-base-latest
+FROM exokomodo/development:womb-base-latest
 
-RUN ln -s /app/bootstrap/linux/daybreak /usr/bin/daybreak
+ARG DOTNET_BUILD_CONFIGURATION=Debug
+
+RUN dotnet restore
+
+RUN dotnet build --no-restore \
+	--configuration ${DOTNET_BUILD_CONFIGURATION} \
+	Womb

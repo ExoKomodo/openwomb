@@ -1,4 +1,4 @@
-FROM exokomodo/development:211-cicada-base-latest
+FROM exokomodo/development:womb-base-latest
 
 RUN apt-get update -y --fix-missing
 

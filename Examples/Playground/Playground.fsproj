@@ -23,7 +23,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Compile Include="Program.fs" />
-    <ProjectReference Include="..\..\Komodo\Komodo.fsproj">
+    <ProjectReference Include="..\..\Womb\Womb.fsproj">
       <Properties Condition="$(DefineConstants.Contains('DEBUG'))">
         DefineConstants=$(DefineConstants);DEBUG
       </Properties>

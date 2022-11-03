@@ -4,8 +4,6 @@ ARG MOUNT_DIRECTORY=/app
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update -y --fix-missing
-
 # Add jenkins user and group
 ENV CICADA_JENKINS_USER=112
 ENV CICADA_JENKINS_GROUP=119
