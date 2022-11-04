@@ -1,6 +1,6 @@
 open Argu
-open Komodo
-open Komodo.Graphics
+open Womb
+open Womb.Graphics
 open System
 
 let DEFAULT_WIDTH = 800u
@@ -67,7 +67,7 @@ let main argv =
   let height = parsedArgs.GetResult(Height, DEFAULT_HEIGHT)
 
   ( Game.play
-      "Komodo Playground"
+      "Womb Playground"
       width
       height
       (Some initHandler)

@@ -1,0 +1,69 @@
+pipeline {
+  agent any
+
+  options {
+    disableConcurrentBuilds()
+    ansiColor('xterm')
+  }
+
+  environment {
+    CICADA_PRD_BRANCH = 'main'
+    CICADA_REGISTRY_PASSWORD = credentials('docker-password')
+    CICADA_REGISTRY_USERNAME = credentials('docker-username')
+    CICADA_NAME = 'womb'
+
+    CICADA_DOCKER_HUB_DEV_PROJECT = 'development'
+    CICADA_DOCKER_HUB_PRD_PROJECT = 'womb'
+    CICADA_DOCKER_HUB_USERNAME = 'exokomodo'
+  }
+
+  stages {
+    stage('docker login') {
+      steps {
+        sh "bash ${CICADA_CI_DIR}/container_login.bash"
+      }
+    }
+
+    stage('[womb]') {
+      environment {
+        DOTNET_BUILD_PROJECT = "Womb"
+      }
+
+      stages {
+        stage('[womb] build') {
+          environment {
+            DOTNET_BUILD_CONFIGURATION = "Debug"
+          }
+
+          steps {
+            sh "bash ${CICADA_COMPOSE} womb-build build"
+          }
+        }
+      }
+    }
+
+    stage('[examples/playground]') {
+      environment {
+        DOTNET_BUILD_PROJECT = "Examples/Playground"
+      }
+
+      stages {
+        stage('[examples/playground] build') {
+          environment {
+            DOTNET_BUILD_CONFIGURATION = "Debug"
+          }
+
+          steps {
+            sh "bash ${CICADA_COMPOSE} example-playground-build build"
+          }
+        }
+      }
+    }
+  }
+
+  post {
+    cleanup {
+      sh "bash ${CICADA_CI_DIR}/cleanup.bash"
+    }
+  }
+}
