@@ -1,1 +1,1 @@
-FROM exokomodo/development:womb-cicada-base-latest
+FROM exokomodo/womb:base-latest
