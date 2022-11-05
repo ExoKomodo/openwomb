@@ -115,7 +115,7 @@ let private initializeGraphicsContext config =
     match glGetString GL_VENDOR with
     | Some(vendor) -> vendor
     | None ->
-        fail "Something Examples/Playground/went wrong getting vendor string"
+        fail "Something went wrong getting vendor string"
         "<invalid:vendor>"
   let renderer =
     match glGetString GL_RENDERER with

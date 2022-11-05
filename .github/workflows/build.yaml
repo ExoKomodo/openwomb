@@ -29,10 +29,10 @@ jobs:
       run: dotnet restore
 
     - name: Build Womb library [${{ matrix.configuration }}]
-      run: dotnet build --no-restore --configuration ${{ matrix.configuration }} Womb
+      run: dotnet build --no-restore --configuration ${{ matrix.configuration }} src/Womb
 
-    - name: Build Examples/Playground [${{ matrix.configuration }}]
-      run: dotnet build --no-restore --configuration ${{ matrix.configuration }} Examples/Playground
+    - name: Build examples/Playground [${{ matrix.configuration }}]
+      run: dotnet build --no-restore --configuration ${{ matrix.configuration }} examples/Playground
 
     - name: Test [${{ matrix.configuration }}]
       run: dotnet test --no-build
