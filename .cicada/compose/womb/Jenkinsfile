@@ -54,8 +54,6 @@ pipeline {
           }
 
           steps {
-            sh "pwd"
-            sh "ls -a"
             sh "bash ${CICADA_COMPOSE} example-playground-build build"
           }
         }
