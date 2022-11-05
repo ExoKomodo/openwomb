@@ -26,7 +26,7 @@ pipeline {
 
     stage('[womb]') {
       environment {
-        DOTNET_BUILD_PROJECT = "src/Womb"
+        DOTNET_BUILD_PROJECT = "src/Womb/Womb.fsproj"
       }
 
       stages {
@@ -44,7 +44,7 @@ pipeline {
 
     stage('[examples/playground]') {
       environment {
-        DOTNET_BUILD_PROJECT = "examples/Playground"
+        DOTNET_BUILD_PROJECT = "examples/Playground/Playground.fsproj"
       }
 
       stages {
