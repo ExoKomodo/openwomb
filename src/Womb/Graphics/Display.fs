@@ -61,20 +61,24 @@ let private buildShader
       debug $"Successfully compiled %s{shaderTypeString} shader"
       Some(shader)
 
-let private linkShaderProgram vertexShader fragmentShader =
+let private linkShaderPrograms shaders =
   let shaderProgram = glCreateProgram()
-  glAttachShader
-    shaderProgram
-    vertexShader
-  glAttachShader
-    shaderProgram
-    fragmentShader
-  glLinkProgram shaderProgram
-  glDeleteShader vertexShader
-  glDeleteShader fragmentShader
+  List.map
+    (glAttachShader shaderProgram)
+    shaders |> ignore
 
-  debug
-    $"Successfully linked shader program with vertex shader (ID:%d{vertexShader}) fragment shader (ID:%d{fragmentShader})"
+  glLinkProgram shaderProgram
+  List.map
+    glDeleteShader
+    shaders |> ignore
+
+  List.map
+    (
+      fun shaderId -> (debug
+        $"Successfully linked shader program with shader (ID:%d{shaderId})"
+      )
+    )
+    shaders |> ignore
   
   let success =
     glGetProgramiv
@@ -87,21 +91,34 @@ let private linkShaderProgram vertexShader fragmentShader =
   else
     Some(shaderProgram)
 
-let compileShader vertexShaderPath fragmentShaderPath =
-  let vertexShaderSource = File.ReadAllText(vertexShaderPath)
-  let fragmentShaderSource = File.ReadAllText(fragmentShaderPath)
-  let vertexShaderOpt =
-    buildShader GL_VERTEX_SHADER vertexShaderSource
-  let fragmentShaderOpt =
-    buildShader GL_FRAGMENT_SHADER fragmentShaderSource
+let private _compileShader shaderPath shaderType =
+  let shaderSource = File.ReadAllText(shaderPath)
+  buildShader shaderType shaderSource
 
-  match (vertexShaderOpt, fragmentShaderOpt) with
-  | Some(vertexShader), Some(fragmentShader) ->
-    match linkShaderProgram vertexShader fragmentShader with
-    | Some(shaderProgram) ->
-        Some(shaderProgram)
-    | None -> None 
-  | _ -> None
+let compileShader vertexShaderPaths fragmentShaderPaths =
+  let shaderInfo = (
+    List.append
+      (List.map
+        (fun shaderPath -> shaderPath, GL_VERTEX_SHADER)
+        vertexShaderPaths)
+      (List.map
+        (fun shaderPath -> shaderPath, GL_FRAGMENT_SHADER)
+        fragmentShaderPaths)
+  )
+  let shaders: list<uint> = (List.choose  id
+    (
+      List.map
+        (fun (shaderPath, shaderType) ->
+          _compileShader shaderPath shaderType
+        )
+        shaderInfo
+    )
+  )
+
+  match linkShaderPrograms shaders with
+  | Some(shaderProgram) ->
+      Some(shaderProgram)
+  | None -> None
 
 let private initializeGraphicsContext config =
   debug "BEGIN graphics context initialization"

@@ -54,16 +54,16 @@ type ShadedObject =
     Vertices: array<single>;
     Indices: array<uint>;
     Shader: uint;
-    FragmentShaderPath: string;
-    VertexShaderPath: string; }
+    FragmentShaderPaths: list<string>;
+    VertexShaderPaths: list<string>; }
 
     static member Default =
       { VertexData = VertexObjectData.Default
         Shader = 0u
         Vertices = Array.empty
         Indices = Array.empty
-        FragmentShaderPath = ""
-        VertexShaderPath = "" }
+        FragmentShaderPaths = List.Empty
+        VertexShaderPaths = List.Empty }
 
     static member From (primitive: ShadedObject) (vertices) (indices) : ShadedObject =
       { primitive with

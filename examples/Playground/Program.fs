@@ -22,8 +22,9 @@ let private initHandler config =
   primitive <-
     Primitives.ShadedObject.From
       { primitive with
-          FragmentShaderPath = "Resources/Shaders/fragment.glsl"
-          VertexShaderPath = "Resources/Shaders/vertex.glsl" }
+          FragmentShaderPaths = ["Resources/Shaders/fragment.glsl"]
+          VertexShaderPaths = ["Resources/Shaders/vertex.glsl"]
+      }
       [|
         0.0f; -0.5f; 0.0f;  // shared vertex
         // first triangle
@@ -37,7 +38,7 @@ let private initHandler config =
         0u; 1u; 2u; // first triangle vertex order as array indices
         0u; 3u; 4u; // second triangle vertex order as array indices
       |]
-  match Display.compileShader primitive.VertexShaderPath primitive.FragmentShaderPath with
+  match Display.compileShader primitive.VertexShaderPaths primitive.FragmentShaderPaths with
   | Some(shader) -> 
       primitive <-
         { primitive with
