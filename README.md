@@ -1,9 +1,8 @@
 # Womb
 
 ## Important Links
+- [Learn OpenGL Tutorial](https://learnopengl.com)
 - [SDL Linux README](https://github.com/libsdl-org/SDL/blob/main/docs/README-linux.md)
-
-TODO: Everything else
 
 ## Linux
 
@@ -16,5 +15,4 @@ export MESA_GLSL_VERSION_OVERRIDE=330
 ```
 
 ## References
-- [OpenGL Bindings Reference](https://github.com/latet-party/LTP.Interop.OpenGL)
 - [SDL2 Bindings Reference](https://github.com/flibitijibibo/SDL2-CS)
