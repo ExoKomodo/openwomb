@@ -4,12 +4,13 @@ open Womb.Engine.Internals
 open Womb.Graphics
 open Womb.Logging
 
-let play
+let play<'T>
   title
   width
   height
-  (initHandlerOpt: option<Config -> Config>)
-  (drawHandlerOpt: option<Display.Config -> Display.Config>) =
+  (state:'T)
+  (initHandlerOpt: option<Config -> 'T -> Config * 'T>)
+  (drawHandlerOpt: option<Display.Config -> 'T -> Display.Config * 'T>) =
     info $"Starting up %s{title}"
     let config =
       { Config.Default with
