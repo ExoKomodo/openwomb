@@ -42,47 +42,53 @@ let private stop = Config.Default.StopHandler
 
 open SDL2Bindings
 
-let internal handleQuit config (event:SDL.SDL_Event) =
-  config.StopHandler config
+let internal handleQuit (configState:Config * 'T) (event:SDL.SDL_Event) =
+  let (config, state) = configState
+  (config.StopHandler config, state)
 
-let internal handleKeyUp config (event:SDL.SDL_Event) =
+let internal handleKeyUp (configState:Config * 'T) (event:SDL.SDL_Event) =
+  let (config, state) = configState
   match event.key.keysym.sym with
-  | SDL.SDL_Keycode.SDLK_ESCAPE -> stop config
-  | SDL.SDL_Keycode.SDLK_f ->
-    { config with
-        DisplayConfig = Display.toggleFullscreen config.DisplayConfig }
-  | _ -> config
+  | SDL.SDL_Keycode.SDLK_ESCAPE -> (stop config, state)
+  | SDL.SDL_Keycode.SDLK_f -> (
+      { config with
+          DisplayConfig = Display.toggleFullscreen config.DisplayConfig },
+      state
+    )
+  | _ -> configState
 
-let internal handleEvent config (event:SDL.SDL_Event) =
+let internal handleEvent (configState:Config * 'T) (event:SDL.SDL_Event) =
+  let (config, state) = configState
   match event.typeFSharp with
-  | SDL.SDL_EventType.SDL_KEYUP -> handleKeyUp config event
-  | SDL.SDL_EventType.SDL_QUIT -> handleQuit config event
-  | _ -> config
+  | SDL.SDL_EventType.SDL_KEYUP -> handleKeyUp (config, state) event
+  | SDL.SDL_EventType.SDL_QUIT -> handleQuit (config, state) event
+  | _ -> configState
 
 ////////////
 // Module //
 ////////////
 
-let private drawLoop<'T> (drawHandler:Display.Config -> 'T -> Display.Config * 'T) config state =
-  let (updatedConfig, updatedState) = drawHandler config.DisplayConfig state
+let private drawLoop<'T> (drawHandler:Display.Config * 'T -> Display.Config * 'T) (configState:Config * 'T) =
+  let (config, state) = configState
+  let (updatedConfig, updatedState) = drawHandler (config.DisplayConfig, state)
   (
     { config with
         DisplayConfig = updatedConfig },
     updatedState
   )
 
-let rec private eventLoop config =
+let rec private eventLoop (configState:Config * 'T) =
   let mutable event = SDL.SDL_Event()
   if SDL.SDL_PollEvent(&event) = 0 then
-    config
+    configState
   else
-    let updated = handleEvent config event
-    eventLoop updated
+    handleEvent configState event |> eventLoop
 
-let internal shutdown (config: Config) : Config =
+let internal shutdown (configState: Config * 'T) : Config * 'T =
+  let (config, state) = configState
   warn "Shutting down internals"
   SDL.SDL_Quit()
-  stop config
+  (stop config, state)
 
 let drawBegin (config:Display.Config) =
   Display.clear config
@@ -90,21 +96,24 @@ let drawBegin (config:Display.Config) =
 let drawEnd (config:Display.Config) =
   Display.swap config
 
-let internal drawHandlerDefault (config:Display.Config) =
-  Display.clear config
-  |> Display.swap
+let internal drawHandlerDefault<'T> (configState:Display.Config * 'T) =
+  let (config, state) = configState
+  ( Display.clear config
+      |> Display.swap,
+    state
+  )
 
-let internal initHandlerDefault<'T> (config:Config) (state:'T) : Config * 'T =
-  (config, state)
+let internal initHandlerDefault<'T> (configState:Config * 'T) : Config * 'T =
+  configState
 
 let internal updateDefault<'T>
-  (drawHandler:Display.Config -> 'T -> Display.Config * 'T)
-  (config:Config)
-  (state:'T) : Config *'T =
-    eventLoop config |> drawLoop drawHandler
+  (drawHandler:Display.Config * 'T -> Display.Config * 'T)
+  (configState:Config * 'T) : Config * 'T =
+    eventLoop configState |> drawLoop drawHandler
 
-let rec internal updateLoop (updateImpl:Config -> Config) (config:Config) : Config =
+let rec internal updateLoop<'T> (updateImpl:Config * 'T -> Config * 'T) (configState:Config * 'T) : Config * 'T =
+  let (config, _) = configState
   if not config.IsRunning then
-    config
+    configState
   else
-    updateImpl config |> updateLoop updateImpl
+    updateImpl configState |> updateLoop updateImpl
