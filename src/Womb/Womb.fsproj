@@ -51,7 +51,7 @@
     <Compile Include="Graphics/Display.fs" />
     <Compile Include="Engine/Internals.fs" />
     <Compile Include="Game.fs" />
-    <PackageReference Include="FSharp.Core" Version="5.0.2">
+    <PackageReference Include="FSharp.Core" Version="7.0.x">
       <GeneratePathProperty></GeneratePathProperty>
     </PackageReference>
     <Content Include="../ThirdParty/**/*.LICENSE">
