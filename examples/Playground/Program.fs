@@ -67,9 +67,11 @@ let main argv =
   let width = parsedArgs.GetResult(Width, DEFAULT_WIDTH)
   let height = parsedArgs.GetResult(Height, DEFAULT_HEIGHT)
 
-  ( Game.play
+  let (config, _) = (
+    Game.play
       "Womb Playground"
       width
       height
       (Some initHandler)
-      (Some drawHandler) ).ExitCode
+      (Some drawHandler) )
+  config.ExitCode
