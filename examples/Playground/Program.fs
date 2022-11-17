@@ -16,12 +16,17 @@ type CliArguments =
       | Width _ -> $"set the initial display width (default: %d{DEFAULT_WIDTH})"
       | Height _ -> $"set the initial display height (default: %d{DEFAULT_HEIGHT})"
 
-let mutable private primitive = Primitives.ShadedObject.Default
+type GameState =
+  { Triangles: Primitives.ShadedObject; }
+  
+    static member Default = {
+      Triangles = Primitives.ShadedObject.Default }
 
-let private initHandler config =
-  primitive <-
+let private initHandler configState =
+  let (config, state) = configState
+  let triangles =
     Primitives.ShadedObject.From
-      { primitive with
+      { state.Triangles with
           FragmentShaderPaths = ["Resources/Shaders/fragment.glsl"]
           VertexShaderPaths = ["Resources/Shaders/vertex.glsl"]
       }
@@ -38,21 +43,24 @@ let private initHandler config =
         0u; 1u; 2u; // first triangle vertex order as array indices
         0u; 3u; 4u; // second triangle vertex order as array indices
       |]
-  match Display.compileShader primitive.VertexShaderPaths primitive.FragmentShaderPaths with
+  match Display.compileShader triangles.VertexShaderPaths triangles.FragmentShaderPaths with
   | Some(shader) -> 
-      primitive <-
-        { primitive with
-            Shader = shader
-            VertexData = Primitives.VertexObjectData.From primitive.Vertices primitive.Indices }
-      config
+      (
+        config,
+        { GameState.Default with
+            Triangles = { triangles with
+              Shader = shader
+              VertexData = Primitives.VertexObjectData.From triangles.Vertices triangles.Indices } }
+      )
   | None ->
       Logging.fail "Failed to compile shader"
-      config
+      configState
 
-let private drawHandler config =
+let private drawHandler configState =
+  let (config, state) = configState
   let config = Display.clear config
-  Primitives.drawShadedObject primitive
-  Display.swap config
+  Primitives.drawShadedObject state.Triangles
+  (Display.swap config, state)
 
 [<EntryPoint>]
 let main argv =
@@ -67,9 +75,12 @@ let main argv =
   let width = parsedArgs.GetResult(Width, DEFAULT_WIDTH)
   let height = parsedArgs.GetResult(Height, DEFAULT_HEIGHT)
 
-  ( Game.play
+  let (config, _) = (
+    Game.play
       "Womb Playground"
       width
       height
+      GameState.Default
       (Some initHandler)
-      (Some drawHandler) ).ExitCode
+      (Some drawHandler) )
+  config.ExitCode
