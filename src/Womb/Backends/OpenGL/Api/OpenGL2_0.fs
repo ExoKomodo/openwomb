@@ -3,10 +3,12 @@ module Womb.Backends.OpenGL.Api.OpenGL2_0
 
 #nowarn "9" // Unverifiable IL due to fixed expression and NativePtr library usage
 
+open Microsoft.FSharp.NativeInterop
+open System.Numerics
+open System.Text
 open Womb.Logging
 open Womb.Backends.OpenGL.Api.Common
 open Womb.Backends.OpenGL.Api.Constants
-open Microsoft.FSharp.NativeInterop
 
 type private BlendEquationSeparate = delegate of uint * uint -> unit
 let mutable private _glBlendEquationSeparate = BlendEquationSeparate(fun _ _ -> warn (notLinked<BlendEquationSeparate>()))
@@ -144,6 +146,9 @@ let glGetShaderSource shader bufferSize length source = _glGetShaderSource.Invok
 type private GetUniformLocation = delegate of uint * nativeptr<byte> -> int
 let mutable private _glGetUniformLocation = GetUniformLocation(fun _ _ -> warn (notLinked<GetUniformLocation>()); 0; )
 let glGetUniformLocation program name = _glGetUniformLocation.Invoke(program, name)
+let glGetUniformLocationEasy (program:uint) (name:string) =
+  use namePtr = fixed Encoding.ASCII.GetBytes(name) in
+    glGetUniformLocation program namePtr
 
 type private GetUniformfv = delegate of uint * int * nativeptr<single> -> unit
 let mutable private _glGetUniformfv = GetUniformfv(fun _ _ _ -> warn (notLinked<GetUniformfv>()))
@@ -275,6 +280,15 @@ let glUniformMatrix3fv location count transpose value = _glUniformMatrix3fv.Invo
 type private UniformMatrix4fv = delegate of int * int * bool * nativeptr<single> -> unit
 let mutable private _glUniformMatrix4fv = UniformMatrix4fv(fun _ _ _ _ -> warn (notLinked<UniformMatrix4fv>()))
 let glUniformMatrix4fv location count transpose value = _glUniformMatrix4fv.Invoke(location, count, transpose, value)
+let glUniformMatrix4fvEasy location count (value:Matrix4x4) =
+  let buffer = [|
+    value.M11; value.M12; value.M13; value.M14;
+    value.M21; value.M22; value.M23; value.M24;
+    value.M31; value.M32; value.M33; value.M34;
+    value.M41; value.M42; value.M43; value.M44;
+  |]
+  use bufPtr = fixed buffer in
+    glUniformMatrix4fv location count false bufPtr
 
 type private ValidateProgram = delegate of uint -> unit
 let mutable private _glValidateProgram = ValidateProgram(fun _ -> warn (notLinked<ValidateProgram>()))
