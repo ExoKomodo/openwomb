@@ -22,8 +22,8 @@ type GameState =
     static member Default = {
       Triangles = Primitives.ShadedObject.Default }
 
-let private initHandler configState =
-  let (config, state) = configState
+let private initHandler (config:Config<GameState>) =
+  let state = config.State
   let triangles =
     Primitives.ShadedObject.From
       { state.Triangles with
@@ -45,22 +45,23 @@ let private initHandler configState =
       |]
   match Display.compileShader triangles.VertexShaderPaths triangles.FragmentShaderPaths with
   | Some(shader) -> 
-      (
-        config,
-        { GameState.Default with
-            Triangles = { triangles with
-              Shader = shader
-              VertexData = Primitives.VertexObjectData.From triangles.Vertices triangles.Indices } }
-      )
+      { config with
+          State =
+            { GameState.Default with
+                Triangles =
+                  { triangles with
+                    Shader = shader
+                    VertexData = Primitives.VertexObjectData.From triangles.Vertices triangles.Indices } } }
   | None ->
       Logging.fail "Failed to compile shader"
-      configState
+      config
 
-let private drawHandler configState =
-  let (config, state) = configState
-  let config = Display.clear config
+let private drawHandler (config:Config<GameState>) =
+  let state = config.State
+  let displayConfig = Display.clear config.DisplayConfig
   Primitives.drawShadedObject state.Triangles
-  (Display.swap config, state)
+  { config with
+      DisplayConfig = Display.swap displayConfig }
 
 [<EntryPoint>]
 let main argv =
@@ -75,12 +76,11 @@ let main argv =
   let width = parsedArgs.GetResult(Width, DEFAULT_WIDTH)
   let height = parsedArgs.GetResult(Height, DEFAULT_HEIGHT)
 
-  let (config, _) = (
-    Game.play
+  ( Game.play
       "Womb Playground"
       width
       height
       GameState.Default
       (Some initHandler)
-      (Some drawHandler) )
-  config.ExitCode
+      None
+      (Some drawHandler) ).ExitCode
