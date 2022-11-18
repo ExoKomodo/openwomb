@@ -3,6 +3,7 @@ module Womb.Types
 
 open SDL2Bindings
 open Womb.Graphics
+open Womb.Input
 open Womb.Logging
 
 type Config<'T> =
@@ -12,6 +13,7 @@ type Config<'T> =
     ExitCode: int;
     ResourcePathRoot: string;
     State: 'T;
+    Mouse: MouseState;
     InitHandler: Config<'T> -> Config<'T>;
     KeyUpHandler: Config<'T> -> SDL.SDL_Event -> Config<'T>;
     DrawHandler: Config<'T> -> Config<'T>;
@@ -32,6 +34,7 @@ type Config<'T> =
         ExitCode = 0
         ResourcePathRoot = "Resources"
         State = state
+        Mouse = MouseState.Default
         InitHandler = fun config -> config
         KeyUpHandler = fun config (event:SDL.SDL_Event) ->
           match event.key.keysym.sym with
