@@ -1,32 +1,9 @@
 module Womb.Graphics.Display
 
+open SDL2Bindings
 open Womb.Backends.OpenGL.Api
 open Womb.Backends.OpenGL.Api.Constants
 open Womb.Logging
-
-///////////
-// Types //
-///////////
-
-open SDL2Bindings
-
-type Config =
-  { Width: uint;
-    Height: uint;
-    Title: string;
-    IsFullscreen: bool;
-    WindowFlags: SDL.SDL_WindowFlags;
-    Window: nativeint;
-    Context: nativeint; }
-
-    static member Default =
-      { Width = 800u
-        Height = 600u
-        Title = "Womb"
-        IsFullscreen = false
-        WindowFlags = SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN
-        Window = 0n
-        Context = 0n }
 
 ////////////C
 // Module //
@@ -120,7 +97,7 @@ let compileShader vertexShaderPaths fragmentShaderPaths =
       Some(shaderProgram)
   | None -> None
 
-let private initializeGraphicsContext config =
+let private initializeGraphicsContext (config:DisplayConfig) =
   debug "BEGIN graphics context initialization"
   let context = SDL.SDL_GL_CreateContext(config.Window)
   SDL.SDL_GL_MakeCurrent(config.Window, context)
@@ -159,7 +136,7 @@ let private initializeGraphicsContext config =
 
   { config with Context = context }
 
-let private setGLAttributes config =
+let private setGLAttributes (config:DisplayConfig) =
   SDL.SDL_GL_SetAttribute(
     SDL.SDL_GLattr.SDL_GL_CONTEXT_MAJOR_VERSION,
     3 ) |> ignore
@@ -230,12 +207,12 @@ let private setGLAttributes config =
     SDL.SDL_GLattr.SDL_GL_CONTEXT_RELEASE_BEHAVIOR,
     1 ) |> ignore
 
-let private determineWindowFlags config =
+let private determineWindowFlags (config:DisplayConfig) =
   SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL
   ||| SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE
   ||| SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN
 
-let private initializeWindow config =
+let private initializeWindow (config:DisplayConfig) =
   debug "Initializing window"
   setGLAttributes config
   let windowFlags = determineWindowFlags config
@@ -250,7 +227,7 @@ let private initializeWindow config =
           (int config.Height),
           windowFlags ) }
 
-let clear config =
+let clear (config:DisplayConfig) =
   glClearColor
     1f
     0f
@@ -260,7 +237,7 @@ let clear config =
     GL_COLOR_BUFFER_BIT
   config
 
-let initialize config =
+let initialize (config:DisplayConfig) =
   debug
     $"BEGIN graphics initialization for %s{config.Title} with %d{config.Width} by %d{config.Height}"
 
@@ -273,13 +250,13 @@ let initialize config =
       initializeWindow config 
       |> initializeGraphicsContext )
 
-let shutdown config =
+let shutdown (config:DisplayConfig) =
   config
 
-let swap config =
+let swap (config:DisplayConfig) =
   SDL.SDL_GL_SwapWindow(config.Window)
   config
 
-let toggleFullscreen config =
+let toggleFullscreen (config:DisplayConfig) =
   { config with
       IsFullscreen = not config.IsFullscreen }

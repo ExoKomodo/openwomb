@@ -47,9 +47,12 @@
     <Compile Include="Backends/OpenGL/Api/OpenGL3_2.fs" />
     <Compile Include="Backends/OpenGL/Api/OpenGL3_3.fs" />
     <Compile Include="Backends/OpenGL/Module.fs" />
+    <Compile Include="Graphics/Types.fs" />
     <Compile Include="Graphics/Primitives.fs" />
     <Compile Include="Graphics/Display.fs" />
+    <Compile Include="Types.fs" />
     <Compile Include="Engine/Internals.fs" />
+    <Compile Include="Input/Mouse.fs" />
     <Compile Include="Game.fs" />
     <Content Include="../ThirdParty/**/*.LICENSE">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
