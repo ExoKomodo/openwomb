@@ -34,9 +34,6 @@
         DefineConstants=$(DefineConstants);INLINE_LOGGER
       </Properties>
     </ProjectReference>
-    <PackageReference Include="FSharp.Core" Version="7.0.*">
-      <GeneratePathProperty></GeneratePathProperty>
-    </PackageReference>
     <PackageReference Include="Argu" Version="6.1.1">
       <GeneratePathProperty></GeneratePathProperty>
     </PackageReference>
