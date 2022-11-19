@@ -3,7 +3,9 @@ module Womb.Game
 open SDL2Bindings
 open Womb.Engine.Internals
 open Womb.Graphics
+open Womb.Graphics.Types
 open Womb.Logging
+open Womb.Types
 
 let play<'T>
   title

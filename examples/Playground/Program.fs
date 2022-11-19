@@ -1,6 +1,7 @@
 open Argu
 open Womb
 open Womb.Graphics
+open Womb.Types
 open System
 
 let DEFAULT_WIDTH = 800u
@@ -50,8 +51,8 @@ let private initHandler (config:Config<GameState>) =
             { GameState.Default with
                 Triangles =
                   { triangles with
-                    Shader = shader
-                    VertexData = Primitives.VertexObjectData.From triangles.Vertices triangles.Indices } } }
+                      Shader = shader
+                      VertexData = Primitives.VertexObjectData.From triangles.Vertices triangles.Indices } } }
   | None ->
       Logging.fail "Failed to compile shader"
       config
@@ -59,7 +60,7 @@ let private initHandler (config:Config<GameState>) =
 let private drawHandler (config:Config<GameState>) =
   let state = config.State
   let displayConfig = Display.clear config.DisplayConfig
-  Primitives.drawShadedObject state.Triangles
+  Primitives.drawShadedObject config state.Triangles
   { config with
       DisplayConfig = Display.swap displayConfig }
 

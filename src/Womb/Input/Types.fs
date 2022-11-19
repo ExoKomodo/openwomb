@@ -1,4 +1,3 @@
-[<AutoOpen>]
 module Womb.Input.Types
 
 open System.Numerics

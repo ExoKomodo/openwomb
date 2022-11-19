@@ -3,7 +3,8 @@ module Womb.Engine.Internals
 open SDL2Bindings
 open System.Numerics
 open Womb.Graphics
-open Womb.Input
+open Womb.Graphics.Types
+open Womb.Input.Types
 open Womb.Logging
 open Womb.Types
 
@@ -20,7 +21,7 @@ let internal handleEvent (config:Config<'T>) (event:SDL.SDL_Event) =
 // Module //
 ////////////
 
-let private pollMouseState<'T> (config:Config<'T>) : MouseState =
+let internal pollMouseState<'T> (config:Config<'T>) : MouseState =
   let (_, x, y) = SDL.SDL_GetMouseState()
   let (adjustedX, adjustedY) = (
     x,
