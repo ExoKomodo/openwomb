@@ -59,7 +59,7 @@ let private initHandler (config:Config<GameState>) =
 let private drawHandler (config:Config<GameState>) =
   let state = config.State
   let displayConfig = Display.clear config.DisplayConfig
-  Primitives.drawShadedObject state.Triangles
+  Primitives.drawShadedObject config state.Triangles
   { config with
       DisplayConfig = Display.swap displayConfig }
 

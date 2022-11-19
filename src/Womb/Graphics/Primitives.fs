@@ -6,6 +6,7 @@ open System.Numerics
 open System.Text
 open Womb.Backends.OpenGL.Api
 open Womb.Backends.OpenGL.Api.Constants
+open Womb.Types
 
 type VertexObjectData =
   { VAO: uint;
@@ -75,9 +76,10 @@ type ShadedObject =
           Indices = indices
           VertexData = VertexObjectData.From vertices indices }
 
-let private _useMvpShader shader (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (scale:Vector3) (rotation:Vector3) (translation:Vector3) =
+let private _useMvpShader<'T> (config:Config<'T>) shader (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (scale:Vector3) (rotation:Vector3) (translation:Vector3) =
   glUseProgram shader
   let mvpUniform = glGetUniformLocationEasy shader "mvp"
+  let mouseUniform = glGetUniformLocationEasy shader "mouse"
 
   let scaleMatrix = Matrix4x4.CreateScale(scale)
   let rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(rotation.Y, rotation.X, rotation.Z)
@@ -86,8 +88,9 @@ let private _useMvpShader shader (viewMatrix:Matrix4x4) (projectionMatrix:Matrix
 
   let mvp = modelMatrix * viewMatrix * projectionMatrix
   glUniformMatrix4fvEasy mvpUniform 1 mvp
+  glUniform2fvEasy mouseUniform 1 config.Mouse
 
-let drawShadedLine (primitive:ShadedObject) =
+let drawShadedLine<'T> (config:Config<'T>) (primitive:ShadedObject) =
   glUseProgram primitive.Shader
   glBindVertexArray primitive.VertexData.VAO
   glBindBuffer
@@ -98,9 +101,9 @@ let drawShadedLine (primitive:ShadedObject) =
     0
     primitive.Indices.Length
 
-let drawShadedLineWithMvp (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (primitive:ShadedObject) (scale:Vector3) (rotation:Vector3) (translation:Vector3) =
+let drawShadedLineWithMvp<'T> (config:Config<'T>) (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (primitive:ShadedObject) (scale:Vector3) (rotation:Vector3) (translation:Vector3) =
   let shader = primitive.Shader
-  _useMvpShader shader viewMatrix projectionMatrix scale rotation translation
+  _useMvpShader config shader viewMatrix projectionMatrix scale rotation translation
 
   glBindVertexArray primitive.VertexData.VAO
   glBindBuffer
@@ -111,7 +114,7 @@ let drawShadedLineWithMvp (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (p
     0
     primitive.Indices.Length
 
-let drawShadedObject (primitive:ShadedObject) =
+let drawShadedObject<'T> (config:Config<'T>) (primitive:ShadedObject) =
   glUseProgram primitive.Shader
   glBindVertexArray primitive.VertexData.VAO
   glBindBuffer
@@ -123,9 +126,9 @@ let drawShadedObject (primitive:ShadedObject) =
     GL_UNSIGNED_INT
     GL_NULL
 
-let drawShadedObjectWithMvp (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (primitive:ShadedObject) (scale:Vector3) (rotation:Vector3) (translation:Vector3) =
+let drawShadedObjectWithMvp<'T> (config:Config<'T>) (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (primitive:ShadedObject) (scale:Vector3) (rotation:Vector3) (translation:Vector3) =
   let shader = primitive.Shader
-  _useMvpShader shader viewMatrix projectionMatrix scale rotation translation
+  _useMvpShader config shader viewMatrix projectionMatrix scale rotation translation
   
   glBindVertexArray primitive.VertexData.VAO
   glBindBuffer

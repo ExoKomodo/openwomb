@@ -20,7 +20,7 @@ let internal handleEvent (config:Config<'T>) (event:SDL.SDL_Event) =
 // Module //
 ////////////
 
-let private pollMouseState<'T> (config:Config<'T>) : MouseState =
+let internal pollMouseState<'T> (config:Config<'T>) : MouseState =
   let (_, x, y) = SDL.SDL_GetMouseState()
   let (adjustedX, adjustedY) = (
     x,
