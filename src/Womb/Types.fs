@@ -1,9 +1,9 @@
-[<AutoOpen>]
 module Womb.Types
 
 open SDL2Bindings
 open Womb.Graphics
-open Womb.Input
+open Womb.Graphics.Types
+open Womb.Input.Types
 open Womb.Logging
 
 type Config<'T> =

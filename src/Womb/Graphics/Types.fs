@@ -1,4 +1,3 @@
-[<AutoOpen>]
 module Womb.Graphics.Types
 
 open Womb.Backends.OpenGL.Api

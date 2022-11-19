@@ -49,14 +49,14 @@
     <Compile Include="Backends/OpenGL/Api/OpenGL3_2.fs" />
     <Compile Include="Backends/OpenGL/Api/OpenGL3_3.fs" />
     <Compile Include="Backends/OpenGL/Module.fs" />
-    <!-- Graphics -->
+    <!-- Types -->
     <Compile Include="Graphics/Types.fs" />
-    <Compile Include="Graphics/Primitives.fs" />
-    <Compile Include="Graphics/Display.fs" />
-    <!-- Input -->
     <Compile Include="Input/Types.fs" />
-    <!-- Engine -->
+    <Compile Include="Graphics/Display.fs" /> <!-- Dependency for Types.fs -->
     <Compile Include="Types.fs" />
+    <!-- Graphics -->
+    <Compile Include="Graphics/Primitives.fs" />
+    <!-- Engine -->
     <Compile Include="Engine/Internals.fs" />
     <!-- Main -->
     <Compile Include="Game.fs" />

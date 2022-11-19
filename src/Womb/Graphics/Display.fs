@@ -1,15 +1,15 @@
 module Womb.Graphics.Display
 
 open SDL2Bindings
+open System.IO
 open Womb.Backends.OpenGL.Api
 open Womb.Backends.OpenGL.Api.Constants
+open Womb.Graphics.Types
 open Womb.Logging
 
 ////////////C
 // Module //
 ////////////
-
-open System.IO
 
 let private shaderTypeToString shaderType =
   match shaderType with

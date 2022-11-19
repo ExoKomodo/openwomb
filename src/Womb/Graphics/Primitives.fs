@@ -6,6 +6,7 @@ open System.Numerics
 open System.Text
 open Womb.Backends.OpenGL.Api
 open Womb.Backends.OpenGL.Api.Constants
+open Womb.Graphics.Types
 open Womb.Types
 
 type VertexObjectData =
@@ -88,7 +89,7 @@ let private _useMvpShader<'T> (config:Config<'T>) shader (viewMatrix:Matrix4x4) 
 
   let mvp = modelMatrix * viewMatrix * projectionMatrix
   glUniformMatrix4fvEasy mvpUniform 1 mvp
-  glUniform2fvEasy mouseUniform 1 config.Mouse
+  glUniform2f mouseUniform config.Mouse.Position.X config.Mouse.Position.Y
 
 let drawShadedLine<'T> (config:Config<'T>) (primitive:ShadedObject) =
   glUseProgram primitive.Shader

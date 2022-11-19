@@ -3,7 +3,8 @@ module Womb.Engine.Internals
 open SDL2Bindings
 open System.Numerics
 open Womb.Graphics
-open Womb.Input
+open Womb.Graphics.Types
+open Womb.Input.Types
 open Womb.Logging
 open Womb.Types
 
