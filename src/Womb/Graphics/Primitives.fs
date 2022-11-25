@@ -2,12 +2,10 @@
 
 #nowarn "9" // Unverifiable IL due to fixed expression and NativePtr library usage
 
+open Microsoft.FSharp.NativeInterop
 open System.Numerics
-open System.Text
 open Womb.Backends.OpenGL.Api
 open Womb.Backends.OpenGL.Api.Constants
-open Womb.Graphics.Types
-open Womb.Logging
 open Womb.Types
 
 type VertexObjectData =
@@ -33,7 +31,7 @@ type VertexObjectData =
       glBufferData<single>
         GL_ARRAY_BUFFER
         vertices
-        GL_STATIC_DRAW
+        GL_DYNAMIC_DRAW
       
       glBindBuffer
         GL_ELEMENT_ARRAY_BUFFER
@@ -109,6 +107,13 @@ let private _useMvpShader<'T> (config:Config<'T>) shader (viewMatrix:Matrix4x4) 
 let drawShadedLine<'T> (config:Config<'T>) (primitive:ShadedObject) =
   glUseProgram primitive.Shader
   glBindVertexArray primitive.VertexData.VAO
+  glBindBuffer
+    GL_ARRAY_BUFFER
+    primitive.VertexData.VBO
+  glBufferSubData
+    GL_ARRAY_BUFFER
+    0
+    primitive.Vertices
   glBindBuffer
     GL_ELEMENT_ARRAY_BUFFER
     primitive.VertexData.EBO
