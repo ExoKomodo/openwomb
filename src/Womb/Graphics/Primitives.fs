@@ -53,6 +53,32 @@ type VertexObjectData =
       { VAO = vao
         VBO = vbo
         EBO = ebo }
+    
+    static member UpdateIndices (indices) (vertexData: VertexObjectData) : VertexObjectData =
+      glBindBuffer
+        GL_ELEMENT_ARRAY_BUFFER
+        vertexData.EBO
+      glBufferSubData<uint>
+        GL_ELEMENT_ARRAY_BUFFER
+        0
+        indices
+       
+      vertexData
+
+    static member UpdateVertices (vertices) (vertexData: VertexObjectData) : VertexObjectData =
+      glBindBuffer
+        GL_ARRAY_BUFFER
+        vertexData.VBO
+      glBufferSubData<single>
+        GL_ARRAY_BUFFER
+        0
+        vertices
+       
+      vertexData
+    
+    static member Update (vertices) (indices) (vertexData: VertexObjectData) : VertexObjectData =
+      VertexObjectData.UpdateVertices vertices vertexData
+        |> VertexObjectData.UpdateIndices indices
 
 type ShadedObject =
   { VertexData: VertexObjectData;
@@ -75,6 +101,21 @@ type ShadedObject =
           Vertices = vertices
           Indices = indices
           VertexData = VertexObjectData.From vertices indices }
+
+    static member UpdateIndices (indices) (primitive: ShadedObject) : ShadedObject =
+      { primitive with
+          Indices = indices
+          VertexData = VertexObjectData.UpdateIndices indices primitive.VertexData }
+
+    static member UpdateVertices (vertices) (primitive: ShadedObject) : ShadedObject =
+      { primitive with
+          Vertices = vertices
+          VertexData = VertexObjectData.UpdateVertices vertices primitive.VertexData }
+
+    static member Update (vertices) (indices) (primitive: ShadedObject) : ShadedObject =
+      { primitive with
+          Vertices = vertices
+          VertexData = VertexObjectData.Update vertices indices primitive.VertexData }
 
 type UniformData =
   | Matrix4x4Uniform of Name:string * Data:Matrix4x4
@@ -110,10 +151,6 @@ let drawShadedLine<'T> (config:Config<'T>) (primitive:ShadedObject) =
   glBindBuffer
     GL_ARRAY_BUFFER
     primitive.VertexData.VBO
-  glBufferSubData
-    GL_ARRAY_BUFFER
-    0
-    primitive.Vertices
   glBindBuffer
     GL_ELEMENT_ARRAY_BUFFER
     primitive.VertexData.EBO
