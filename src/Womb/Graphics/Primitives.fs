@@ -94,10 +94,6 @@ type ShadedObject =
   static member Default =
     Quad(ShadedObjectContext.Default, ShaderProgram.Default)
   
-  static member From obj context shader =
-    match obj with
-    | Quad(_) -> Quad(context, shader)
-  
   static member UpdateIndices (indices) (primitive: ShadedObject) : ShadedObject =
     match primitive with
     | Quad(context, shader) -> Quad(
