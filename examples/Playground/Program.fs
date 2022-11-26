@@ -52,7 +52,7 @@ let private initHandler (config:Config<GameState>) =
                 Triangles =
                   { triangles with
                       Shader = shader
-                      VertexData = Primitives.VertexObjectData.From triangles.VertexData.Vertices triangles.VertexData.Indices } } }
+                      Context = Primitives.ShadedObjectContext.From triangles.Context.Vertices triangles.Context.Indices } } }
   | None ->
       Logging.fail "Failed to compile shader"
       config

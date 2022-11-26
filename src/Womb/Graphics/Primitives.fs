@@ -2,13 +2,12 @@
 
 #nowarn "9" // Unverifiable IL due to fixed expression and NativePtr library usage
 
-open Microsoft.FSharp.NativeInterop
 open System.Numerics
 open Womb.Backends.OpenGL.Api
 open Womb.Backends.OpenGL.Api.Constants
 open Womb.Types
 
-type VertexObjectData =
+type ShadedObjectContext =
   { VAO: uint;
     VBO: uint;
     EBO: uint;
@@ -22,7 +21,7 @@ type VertexObjectData =
         Vertices = Array.empty
         Indices = Array.empty }
 
-    static member From (vertices) (indices) : VertexObjectData =
+    static member From (vertices) (indices) : ShadedObjectContext =
       let vao = glGenVertexArray()
       let vbo = glGenBuffer()
       let ebo = glGenBuffer()
@@ -60,61 +59,61 @@ type VertexObjectData =
         Vertices = vertices
         Indices = indices }
 
-    static member UpdateIndices (indices) (vertexData: VertexObjectData) : VertexObjectData =
+    static member UpdateIndices (indices) (context: ShadedObjectContext) : ShadedObjectContext =
       glBindBuffer
         GL_ELEMENT_ARRAY_BUFFER
-        vertexData.EBO
+        context.EBO
       glBufferSubData<uint>
         GL_ELEMENT_ARRAY_BUFFER
         0
         indices
 
-      { vertexData with
+      { context with
           Indices = indices }
 
-    static member UpdateVertices (vertices) (vertexData: VertexObjectData) : VertexObjectData =
+    static member UpdateVertices (vertices) (context: ShadedObjectContext) : ShadedObjectContext =
       glBindBuffer
         GL_ARRAY_BUFFER
-        vertexData.VBO
+        context.VBO
       glBufferSubData<single>
         GL_ARRAY_BUFFER
         0
         vertices
 
-      { vertexData with
+      { context with
           Vertices = vertices }
     
-    static member Update (vertices) (indices) (vertexData: VertexObjectData) : VertexObjectData =
-      VertexObjectData.UpdateVertices vertices vertexData
-        |> VertexObjectData.UpdateIndices indices
+    static member Update (vertices) (indices) (context: ShadedObjectContext) : ShadedObjectContext =
+      ShadedObjectContext.UpdateVertices vertices context
+        |> ShadedObjectContext.UpdateIndices indices
 
 type ShadedObject =
-  { VertexData: VertexObjectData;
+  { Context: ShadedObjectContext;
     Shader: uint;
     FragmentShaderPaths: list<string>;
     VertexShaderPaths: list<string>; }
 
     static member Default =
-      { VertexData = VertexObjectData.Default
+      { Context = ShadedObjectContext.Default
         Shader = 0u
         FragmentShaderPaths = List.Empty
         VertexShaderPaths = List.Empty }
 
     static member From (primitive: ShadedObject) (vertices) (indices) : ShadedObject =
       { primitive with
-          VertexData = VertexObjectData.From vertices indices }
+          Context = ShadedObjectContext.From vertices indices }
 
     static member UpdateIndices (indices) (primitive: ShadedObject) : ShadedObject =
       { primitive with
-          VertexData = VertexObjectData.UpdateIndices indices primitive.VertexData }
+          Context = ShadedObjectContext.UpdateIndices indices primitive.Context }
 
     static member UpdateVertices (vertices) (primitive: ShadedObject) : ShadedObject =
       { primitive with
-          VertexData = VertexObjectData.UpdateVertices vertices primitive.VertexData }
+          Context = ShadedObjectContext.UpdateVertices vertices primitive.Context }
 
     static member Update (vertices) (indices) (primitive: ShadedObject) : ShadedObject =
       { primitive with
-          VertexData = VertexObjectData.Update vertices indices primitive.VertexData }
+          Context = ShadedObjectContext.Update vertices indices primitive.Context }
 
 type UniformData =
   | Matrix4x4Uniform of Name:string * Data:Matrix4x4
@@ -146,40 +145,40 @@ let private _useMvpShader<'T> (config:Config<'T>) shader (viewMatrix:Matrix4x4) 
 
 let drawShadedLine<'T> (config:Config<'T>) (primitive:ShadedObject) =
   glUseProgram primitive.Shader
-  glBindVertexArray primitive.VertexData.VAO
+  glBindVertexArray primitive.Context.VAO
   glBindBuffer
     GL_ARRAY_BUFFER
-    primitive.VertexData.VBO
+    primitive.Context.VBO
   glBindBuffer
     GL_ELEMENT_ARRAY_BUFFER
-    primitive.VertexData.EBO
+    primitive.Context.EBO
   glDrawArrays
     GL_LINES
     0
-    primitive.VertexData.Indices.Length
+    primitive.Context.Indices.Length
 
 let drawShadedLineWithMvp<'T> (config:Config<'T>) (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (primitive:ShadedObject) (scale:Vector3) (rotation:Vector3) (translation:Vector3) =
   let shader = primitive.Shader
   _useMvpShader config shader viewMatrix projectionMatrix scale rotation translation []
 
-  glBindVertexArray primitive.VertexData.VAO
+  glBindVertexArray primitive.Context.VAO
   glBindBuffer
     GL_ELEMENT_ARRAY_BUFFER
-    primitive.VertexData.EBO
+    primitive.Context.EBO
   glDrawArrays
     GL_LINES
     0
-    primitive.VertexData.Indices.Length
+    primitive.Context.Indices.Length
 
 let drawShadedObject<'T> (config:Config<'T>) (primitive:ShadedObject) =
   glUseProgram primitive.Shader
-  glBindVertexArray primitive.VertexData.VAO
+  glBindVertexArray primitive.Context.VAO
   glBindBuffer
     GL_ELEMENT_ARRAY_BUFFER
-    primitive.VertexData.EBO
+    primitive.Context.EBO
   glDrawElements
     GL_TRIANGLES
-    primitive.VertexData.Indices.Length
+    primitive.Context.Indices.Length
     GL_UNSIGNED_INT
     GL_NULL
 
@@ -188,12 +187,12 @@ let drawShadedObjectWithMvp<'T> (config:Config<'T>) (viewMatrix:Matrix4x4) (proj
   _useMvpShader config shader viewMatrix projectionMatrix scale rotation translation (
     Vector2Uniform("mouse", config.Mouse.Position)::uniforms)
   
-  glBindVertexArray primitive.VertexData.VAO
+  glBindVertexArray primitive.Context.VAO
   glBindBuffer
     GL_ELEMENT_ARRAY_BUFFER
-    primitive.VertexData.EBO
+    primitive.Context.EBO
   glDrawElements
     GL_TRIANGLES
-    primitive.VertexData.Indices.Length
+    primitive.Context.Indices.Length
     GL_UNSIGNED_INT
     GL_NULL
