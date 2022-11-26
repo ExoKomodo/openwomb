@@ -1,8 +1,9 @@
 open Argu
+open System
+open System.Numerics
 open Womb
 open Womb.Graphics
 open Womb.Types
-open System
 
 let DEFAULT_WIDTH = 800u
 let DEFAULT_HEIGHT = 600u
@@ -57,10 +58,33 @@ let private initHandler (config:Config<GameState>) =
       Logging.fail "Failed to compile shader"
       config
 
+let private calculateMatrices cameraPosition cameraTarget =
+  let viewMatrix = Matrix4x4.CreateLookAt(
+    cameraPosition,
+    cameraTarget,
+    Vector3.UnitY
+  )
+  let projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(-1f, 1f, -1f, 1f, 0f, 1f)
+  (viewMatrix, projectionMatrix)
+
 let private drawHandler (config:Config<GameState>) =
+  let cameraPosition = new Vector3(0f, 0f, 1f)
+  let cameraTarget = new Vector3(0f, 0f, 0f)
+  let (viewMatrix, projectionMatrix) = calculateMatrices cameraPosition cameraTarget
+
   let state = config.State
+  let scale = Vector3.One * 1.0f
+  let rotation = Vector3.UnitZ * 0.0f
   let displayConfig = Display.clear config.DisplayConfig
-  Primitives.drawShadedObject config state.Triangles
+  Primitives.drawShadedObject
+    config
+    viewMatrix
+    projectionMatrix
+    state.Triangles
+    scale
+    rotation
+    Vector3.Zero
+    []
   { config with
       DisplayConfig = Display.swap displayConfig }
 

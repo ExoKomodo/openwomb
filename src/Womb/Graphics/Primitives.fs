@@ -5,6 +5,7 @@
 open System.Numerics
 open Womb.Backends.OpenGL.Api
 open Womb.Backends.OpenGL.Api.Constants
+open Womb.Graphics.Types
 open Womb.Types
 
 type ShadedObjectContext =
@@ -115,13 +116,9 @@ type ShadedObject =
       { primitive with
           Context = ShadedObjectContext.Update vertices indices primitive.Context }
 
-type UniformData =
-  | Matrix4x4Uniform of Name:string * Data:Matrix4x4
-  | Vector2Uniform of Name:string * Data:Vector2
-
 let private _useMvpShader<'T> (config:Config<'T>) shader (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (scale:Vector3) (rotation:Vector3) (translation:Vector3) uniforms =
   glUseProgram shader
-  let mvpUniform = glGetUniformLocationEasy shader "mvp"
+  let mvpUniform = glGetUniformLocation shader "mvp"
 
   let scaleMatrix = Matrix4x4.CreateScale(scale)
   let rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(rotation.Y, rotation.X, rotation.Z)
@@ -129,60 +126,21 @@ let private _useMvpShader<'T> (config:Config<'T>) shader (viewMatrix:Matrix4x4) 
   let modelMatrix = scaleMatrix * rotationMatrix * translationMatrix
 
   let mvp = modelMatrix * viewMatrix * projectionMatrix
-  glUniformMatrix4fvEasy mvpUniform 1 mvp
+  glUniformMatrix4fv mvpUniform 1 mvp
   
   List.map
     (
       fun uniformData ->
         match uniformData with
         | Matrix4x4Uniform(name, data) -> 
-            let location = glGetUniformLocationEasy shader name
-            glUniformMatrix4fvEasy location 1 data
+            let location = glGetUniformLocation shader name
+            glUniformMatrix4fv location 1 data
         | Vector2Uniform(name, data) -> 
-            let location = glGetUniformLocationEasy shader name
+            let location = glGetUniformLocation shader name
             glUniform2f location data.X data.Y)
     uniforms |> ignore
 
-let drawShadedLine<'T> (config:Config<'T>) (primitive:ShadedObject) =
-  glUseProgram primitive.Shader
-  glBindVertexArray primitive.Context.VAO
-  glBindBuffer
-    GL_ARRAY_BUFFER
-    primitive.Context.VBO
-  glBindBuffer
-    GL_ELEMENT_ARRAY_BUFFER
-    primitive.Context.EBO
-  glDrawArrays
-    GL_LINES
-    0
-    primitive.Context.Indices.Length
-
-let drawShadedLineWithMvp<'T> (config:Config<'T>) (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (primitive:ShadedObject) (scale:Vector3) (rotation:Vector3) (translation:Vector3) =
-  let shader = primitive.Shader
-  _useMvpShader config shader viewMatrix projectionMatrix scale rotation translation []
-
-  glBindVertexArray primitive.Context.VAO
-  glBindBuffer
-    GL_ELEMENT_ARRAY_BUFFER
-    primitive.Context.EBO
-  glDrawArrays
-    GL_LINES
-    0
-    primitive.Context.Indices.Length
-
-let drawShadedObject<'T> (config:Config<'T>) (primitive:ShadedObject) =
-  glUseProgram primitive.Shader
-  glBindVertexArray primitive.Context.VAO
-  glBindBuffer
-    GL_ELEMENT_ARRAY_BUFFER
-    primitive.Context.EBO
-  glDrawElements
-    GL_TRIANGLES
-    primitive.Context.Indices.Length
-    GL_UNSIGNED_INT
-    GL_NULL
-
-let drawShadedObjectWithMvp<'T> (config:Config<'T>) (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (primitive:ShadedObject) (scale:Vector3) (rotation:Vector3) (translation:Vector3) (uniforms) =
+let drawShadedObject<'T> (config:Config<'T>) (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (primitive:ShadedObject) (scale:Vector3) (rotation:Vector3) (translation:Vector3) (uniforms) =
   let shader = primitive.Shader
   _useMvpShader config shader viewMatrix projectionMatrix scale rotation translation (
     Vector2Uniform("mouse", config.Mouse.Position)::uniforms)
