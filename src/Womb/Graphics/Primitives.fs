@@ -3,6 +3,7 @@
 #nowarn "9" // Unverifiable IL due to fixed expression and NativePtr library usage
 
 open System.Numerics
+open Womb.Logging
 open Womb.Backends.OpenGL.Api
 open Womb.Backends.OpenGL.Api.Constants
 open Womb.Graphics.Types
@@ -93,6 +94,24 @@ type ShadedObject =
 
   static member Default =
     Quad(ShadedObjectContext.Default, ShaderProgram.Default)
+
+  static member CreateQuad vertexPaths fragmentPaths vertices indices =
+    match (
+      Display.compileShader
+        vertexPaths
+        fragmentPaths
+    ) with
+    | Some(shader) -> 
+        Some(
+          Quad(
+            ShadedObjectContext.From vertices indices,
+            shader
+          )
+        )
+    | None ->
+        fail $"Failed to compile quad shaders:\n{vertexPaths}\n{fragmentPaths}"
+        None
+
   
   static member UpdateIndices (indices) (primitive: ShadedObject) : ShadedObject =
     match primitive with
