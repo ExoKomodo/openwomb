@@ -76,7 +76,7 @@ let private drawHandler (config:Config<GameState>) =
   let scale = Vector3.One * 1.0f
   let rotation = Vector3.UnitZ * 0.0f
   let displayConfig = Display.clear config.DisplayConfig
-  Primitives.drawShadedObject
+  Primitives.ShadedObject.Draw
     config
     viewMatrix
     projectionMatrix

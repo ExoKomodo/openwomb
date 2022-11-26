@@ -278,7 +278,6 @@ let glUniformMatrix3fv location count transpose value = _glUniformMatrix3fv.Invo
 
 type private UniformMatrix4fv = delegate of int * int * bool * nativeptr<single> -> unit
 let mutable private _glUniformMatrix4fv = UniformMatrix4fv(fun _ _ _ _ -> warn (notLinked<UniformMatrix4fv>()))
-let glUniformMatrix4fv location count transpose value = _glUniformMatrix4fv.Invoke(location, count, transpose, value)
 let glUniformMatrix4fv location count (value:Matrix4x4) =
   let buffer = [|
     value.M11; value.M12; value.M13; value.M14;

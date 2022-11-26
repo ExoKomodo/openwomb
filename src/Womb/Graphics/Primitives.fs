@@ -89,68 +89,73 @@ type ShadedObjectContext =
         |> ShadedObjectContext.UpdateIndices indices
 
 type ShadedObject =
-  { Context: ShadedObjectContext;
-    Shader: uint;
-    FragmentShaderPaths: list<string>;
-    VertexShaderPaths: list<string>; }
+  | Quad of Context:ShadedObjectContext * Shader:ShaderProgram
 
-    static member Default =
-      { Context = ShadedObjectContext.Default
-        Shader = 0u
-        FragmentShaderPaths = List.Empty
-        VertexShaderPaths = List.Empty }
-
-    static member From (primitive: ShadedObject) (vertices) (indices) : ShadedObject =
-      { primitive with
-          Context = ShadedObjectContext.From vertices indices }
-
-    static member UpdateIndices (indices) (primitive: ShadedObject) : ShadedObject =
-      { primitive with
-          Context = ShadedObjectContext.UpdateIndices indices primitive.Context }
-
-    static member UpdateVertices (vertices) (primitive: ShadedObject) : ShadedObject =
-      { primitive with
-          Context = ShadedObjectContext.UpdateVertices vertices primitive.Context }
-
-    static member Update (vertices) (indices) (primitive: ShadedObject) : ShadedObject =
-      { primitive with
-          Context = ShadedObjectContext.Update vertices indices primitive.Context }
-
-let private _useMvpShader<'T> (config:Config<'T>) shader (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (scale:Vector3) (rotation:Vector3) (translation:Vector3) uniforms =
-  glUseProgram shader
-  let mvpUniform = glGetUniformLocation shader "mvp"
-
-  let scaleMatrix = Matrix4x4.CreateScale(scale)
-  let rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(rotation.Y, rotation.X, rotation.Z)
-  let translationMatrix = Matrix4x4.CreateTranslation(translation)
-  let modelMatrix = scaleMatrix * rotationMatrix * translationMatrix
-
-  let mvp = modelMatrix * viewMatrix * projectionMatrix
-  glUniformMatrix4fv mvpUniform 1 mvp
+  static member Default =
+    Quad(ShadedObjectContext.Default, ShaderProgram.Default)
   
-  List.map
-    (
-      fun uniformData ->
-        match uniformData with
-        | Matrix4x4Uniform(name, data) -> 
-            let location = glGetUniformLocation shader name
-            glUniformMatrix4fv location 1 data
-        | Vector2Uniform(name, data) -> 
-            let location = glGetUniformLocation shader name
-            glUniform2f location data.X data.Y)
-    uniforms |> ignore
-
-let drawShadedObject<'T> (config:Config<'T>) (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (primitive:ShadedObject) (scale:Vector3) (rotation:Vector3) (translation:Vector3) (uniforms) =
-  let shader = primitive.Shader
-  _useMvpShader config shader viewMatrix projectionMatrix scale rotation translation (
-    Vector2Uniform("mouse", config.Mouse.Position)::uniforms)
+  static member From obj context shader =
+    match obj with
+    | Quad(_) -> Quad(context, shader)
   
-  glBindVertexArray primitive.Context.VAO
-  glBindBuffer
-    GL_ELEMENT_ARRAY_BUFFER
-    primitive.Context.EBO
-  glDrawElements
-    GL_TRIANGLES
-    primitive.Context.Indices.Length
-    GL_UNSIGNED_INT
-    GL_NULL
+  static member UpdateIndices (indices) (primitive: ShadedObject) : ShadedObject =
+    match primitive with
+    | Quad(context, shader) -> Quad(
+        ShadedObjectContext.UpdateIndices indices context,
+        shader
+      )
+
+  static member UpdateVertices (vertices) (primitive: ShadedObject) : ShadedObject =
+    match primitive with
+    | Quad(context, shader) -> Quad(
+        ShadedObjectContext.UpdateVertices vertices context,
+        shader
+      )
+
+  static member Update (vertices) (indices) (primitive: ShadedObject) : ShadedObject =
+    match primitive with
+    | Quad(context, shader) -> Quad(
+        ShadedObjectContext.Update vertices indices context,
+        shader
+      )
+  
+  static member private UseMvpShader<'T> (config:Config<'T>) (shader:ShaderProgram) (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (scale:Vector3) (rotation:Vector3) (translation:Vector3) uniforms =
+    glUseProgram shader.Id
+    let mvpUniform = glGetUniformLocation shader.Id "mvp"
+
+    let scaleMatrix = Matrix4x4.CreateScale(scale)
+    let rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(rotation.Y, rotation.X, rotation.Z)
+    let translationMatrix = Matrix4x4.CreateTranslation(translation)
+    let modelMatrix = scaleMatrix * rotationMatrix * translationMatrix
+
+    let mvp = modelMatrix * viewMatrix * projectionMatrix
+    glUniformMatrix4fv mvpUniform 1 mvp
+    
+    List.map
+      (
+        fun uniformData ->
+          match uniformData with
+          | Matrix4x4Uniform(name, data) -> 
+              let location = glGetUniformLocation shader.Id name
+              glUniformMatrix4fv location 1 data
+          | Vector2Uniform(name, data) -> 
+              let location = glGetUniformLocation shader.Id name
+              glUniform2f location data.X data.Y)
+      uniforms |> ignore
+  
+  static member Draw<'T> (config:Config<'T>) (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (primitive:ShadedObject) (scale:Vector3) (rotation:Vector3) (translation:Vector3) (uniforms) =
+    match primitive with
+    | Quad(context, shader) ->
+      ShadedObject.UseMvpShader config shader viewMatrix projectionMatrix scale rotation translation (
+        Vector2Uniform("mouse", config.Mouse.Position)::uniforms)
+      
+      glBindVertexArray context.VAO
+      glBindBuffer
+        GL_ELEMENT_ARRAY_BUFFER
+        context.EBO
+      glDrawElements
+        GL_TRIANGLES
+        context.Indices.Length
+        GL_UNSIGNED_INT
+        GL_NULL
+
