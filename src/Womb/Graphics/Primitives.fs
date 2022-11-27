@@ -92,8 +92,10 @@ type ShadedObjectContext =
 type ShadedObject =
   | Quad of Context:ShadedObjectContext * Shader:ShaderProgram
 
-  static member Default =
+  static member DefaultQuad =
     Quad(ShadedObjectContext.Default, ShaderProgram.Default)
+
+  static member Default = ShadedObject.DefaultQuad
 
   static member CreateQuad vertexPaths fragmentPaths vertices indices =
     match (
