@@ -112,7 +112,6 @@ type ShadedObject =
         fail $"Failed to compile quad shaders:\n{vertexPaths}\n{fragmentPaths}"
         None
 
-  
   static member UpdateIndices (indices) (primitive: ShadedObject) : ShadedObject =
     match primitive with
     | Quad(context, shader) -> Quad(
