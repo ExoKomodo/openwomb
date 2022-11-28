@@ -103,13 +103,11 @@ type ShadedObject =
         vertexPaths
         fragmentPaths
     ) with
-    | Some(shader) -> 
-        Some(
-          Quad(
-            ShadedObjectContext.From vertices indices,
-            shader
-          )
-        )
+    | Some shader ->
+        Quad(
+          ShadedObjectContext.From vertices indices,
+          shader
+        ) |> Some
     | None ->
         fail $"Failed to compile quad shaders:\n{vertexPaths}\n{fragmentPaths}"
         None

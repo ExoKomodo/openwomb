@@ -42,7 +42,7 @@ let private initHandler (config:Config<GameState>) =
     0u; 3u; 4u; // second triangle vertex order as array indices
   |]
   match Primitives.ShadedObject.CreateQuad vertexPaths fragmentPaths vertices indices with
-  | Some(primitive) ->
+  | Some primitive ->
     { config with
         State =
           { GameState.Default with

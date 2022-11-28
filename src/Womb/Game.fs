@@ -28,15 +28,15 @@ let play<'T>
       { config with
           InitHandler =
             match initHandlerOpt with
-              | Some(initHandler) -> initHandler
+              | Some initHandler -> initHandler
               | None -> config.InitHandler
           KeyUpHandler =
             match keyUpHandlerOpt with
-              | Some(keyUpHandler) -> keyUpHandler
+              | Some keyUpHandler -> keyUpHandler
               | None -> config.KeyUpHandler
           DrawHandler =
             match drawHandlerOpt with
-              | Some(drawHandler) -> drawHandler
+              | Some drawHandler -> drawHandler
               | None -> config.DrawHandler }
 
     info "Loaded starting config"
@@ -49,7 +49,7 @@ let play<'T>
     | None ->
         fail "Failed to initialize display"
         defaultReturn config state 1
-    | Some(displayConfig) ->
+    | Some displayConfig ->
         info "Running initialization code"
         let config = config.InitHandler config
         let config =

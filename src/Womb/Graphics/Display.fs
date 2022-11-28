@@ -36,7 +36,7 @@ let private buildShader
       None
     else
       debug $"Successfully compiled %s{shaderTypeString} shader"
-      Some(shader)
+      Some shader
 
 let private linkShaderPrograms shaders =
   let shaderProgram = glCreateProgram()
@@ -66,7 +66,7 @@ let private linkShaderPrograms shaders =
     fail (glGetProgramInfoLog shaderProgram)
     None
   else
-    Some(shaderProgram)
+    Some shaderProgram
 
 let private _compileShader shaderPath shaderType =
   let shaderSource = File.ReadAllText(shaderPath)
@@ -93,11 +93,10 @@ let compileShader vertexShaderPaths fragmentShaderPaths =
   )
 
   match linkShaderPrograms shaders with
-  | Some(programId) ->
-      Some(
-        { Id = programId
-          FragmentPaths = fragmentShaderPaths
-          VertexPaths = vertexShaderPaths } )
+  | Some programId ->
+      { Id = programId
+        FragmentPaths = fragmentShaderPaths
+        VertexPaths = vertexShaderPaths } |> Some
   | None -> None
 
 let private initializeGraphicsContext (config:DisplayConfig) =
@@ -110,19 +109,19 @@ let private initializeGraphicsContext (config:DisplayConfig) =
   
   let vendor =
     match glGetString GL_VENDOR with
-    | Some(vendor) -> vendor
+    | Some vendor -> vendor
     | None ->
         fail "Something went wrong getting vendor string"
         "<invalid:vendor>"
   let renderer =
     match glGetString GL_RENDERER with
-    | Some(renderer) -> renderer
+    | Some renderer -> renderer
     | None ->
         fail "Something went wrong getting renderer string"
         "<invalid:renderer>"
   let version =
     match glGetString GL_VERSION with
-    | Some(version) -> version
+    | Some version -> version
     | None ->
         fail "Something went wrong getting version string"
         "<invalid:version>"
@@ -249,9 +248,9 @@ let initialize (config:DisplayConfig) =
     None
   else
     debug "END graphics initialization"
-    Some(
-      initializeWindow config 
-      |> initializeGraphicsContext )
+    initializeWindow config 
+      |> initializeGraphicsContext
+      |> Some
 
 let shutdown (config:DisplayConfig) =
   config
