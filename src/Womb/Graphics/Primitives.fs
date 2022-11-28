@@ -154,7 +154,11 @@ type ShadedObject =
               glUniformMatrix4fv location 1 data
           | Vector2Uniform(name, data) -> 
               let location = glGetUniformLocation shader.Id name
-              glUniform2f location data.X data.Y)
+              glUniform2f location data.X data.Y
+          | Vector4Uniform(name, data) -> 
+              let location = glGetUniformLocation shader.Id name
+              glUniform4f location data.X data.Y data.Z data.W
+      )
       uniforms |> ignore
   
   static member Draw<'T> (config:Config<'T>) (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (primitive:ShadedObject) (scale:Vector3) (rotation:Vector3) (translation:Vector3) (uniforms) =
