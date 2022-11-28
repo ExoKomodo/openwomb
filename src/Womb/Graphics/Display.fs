@@ -135,6 +135,9 @@ let private initializeGraphicsContext (config:DisplayConfig) =
     0
     (int config.Width)
     (int config.Height)
+  
+  glEnable GL_BLEND
+  glBlendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA  
 
   { config with Context = context }
 
