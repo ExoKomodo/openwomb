@@ -41,5 +41,6 @@ type ShaderProgram =
 
 type Uniform =
   | Matrix4x4Uniform of Name:string * Data:Matrix4x4
+  | Vector1Uniform of Name:string * Data:single
   | Vector2Uniform of Name:string * Data:Vector2
   | Vector4Uniform of Name:string * Data:Vector4
