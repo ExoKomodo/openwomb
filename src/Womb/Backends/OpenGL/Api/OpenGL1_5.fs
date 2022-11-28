@@ -79,7 +79,16 @@ let glBufferData<'T when 'T : unmanaged>
 
 type private BufferSubData = delegate of uint * nativeptr<int> * unativeint * voidptr -> unit
 let mutable private _glBufferSubData = BufferSubData(fun _ _ _ _ -> warn (notLinked<BufferSubData>()))
-let glBufferSubData target offset size data = _glBufferSubData.Invoke(target, offset, size, data)
+let glBufferSubData<'T when 'T : unmanaged>
+  target
+  offset
+  (data:array<'T>) =
+    use ptr = fixed (&data.[0]) in
+      _glBufferSubData.Invoke(
+        target,
+        (offset |> nativeint |> NativePtr.ofNativeInt),
+        (data.Length * sizeof<'T>) |> unativeint,
+        (NativePtr.toVoidPtr ptr))
 
 type private GetBufferSubData = delegate of uint * nativeptr<int> * unativeint * voidptr -> unit
 let mutable private _glGetBufferSubData = GetBufferSubData(fun _ _ _ _ -> warn (notLinked<GetBufferSubData>()))

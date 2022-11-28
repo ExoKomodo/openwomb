@@ -145,10 +145,9 @@ let glGetShaderSource shader bufferSize length source = _glGetShaderSource.Invok
 
 type private GetUniformLocation = delegate of uint * nativeptr<byte> -> int
 let mutable private _glGetUniformLocation = GetUniformLocation(fun _ _ -> warn (notLinked<GetUniformLocation>()); 0; )
-let glGetUniformLocation program name = _glGetUniformLocation.Invoke(program, name)
-let glGetUniformLocationEasy (program:uint) (name:string) =
+let glGetUniformLocation (program:uint) (name:string) =
   use namePtr = fixed Encoding.ASCII.GetBytes(name) in
-    glGetUniformLocation program namePtr
+    _glGetUniformLocation.Invoke(program, namePtr)
 
 type private GetUniformfv = delegate of uint * int * nativeptr<single> -> unit
 let mutable private _glGetUniformfv = GetUniformfv(fun _ _ _ -> warn (notLinked<GetUniformfv>()))
@@ -279,8 +278,7 @@ let glUniformMatrix3fv location count transpose value = _glUniformMatrix3fv.Invo
 
 type private UniformMatrix4fv = delegate of int * int * bool * nativeptr<single> -> unit
 let mutable private _glUniformMatrix4fv = UniformMatrix4fv(fun _ _ _ _ -> warn (notLinked<UniformMatrix4fv>()))
-let glUniformMatrix4fv location count transpose value = _glUniformMatrix4fv.Invoke(location, count, transpose, value)
-let glUniformMatrix4fvEasy location count (value:Matrix4x4) =
+let glUniformMatrix4fv location count (value:Matrix4x4) =
   let buffer = [|
     value.M11; value.M12; value.M13; value.M14;
     value.M21; value.M22; value.M23; value.M24;
@@ -288,7 +286,7 @@ let glUniformMatrix4fvEasy location count (value:Matrix4x4) =
     value.M41; value.M42; value.M43; value.M44;
   |]
   use bufPtr = fixed buffer in
-    glUniformMatrix4fv location count false bufPtr
+    _glUniformMatrix4fv.Invoke(location, count, false, bufPtr)
 
 type private ValidateProgram = delegate of uint -> unit
 let mutable private _glValidateProgram = ValidateProgram(fun _ -> warn (notLinked<ValidateProgram>()))

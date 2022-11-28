@@ -1,5 +1,6 @@
 module Womb.Graphics.Types
 
+open System.Numerics
 open Womb.Backends.OpenGL.Api
 open Womb.Backends.OpenGL.Api.Constants
 open Womb.Logging
@@ -27,3 +28,17 @@ type DisplayConfig =
         WindowFlags = SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN
         Window = 0n
         Context = 0n }
+
+type ShaderProgram =
+  { Id: uint;
+    FragmentPaths: list<string>;
+    VertexPaths: list<string>; }
+
+    static member Default =
+      { Id = 0u
+        FragmentPaths = list.Empty
+        VertexPaths = list.Empty }
+
+type Uniform =
+  | Matrix4x4Uniform of Name:string * Data:Matrix4x4
+  | Vector2Uniform of Name:string * Data:Vector2

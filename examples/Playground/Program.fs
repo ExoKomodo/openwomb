@@ -1,8 +1,9 @@
 open Argu
+open System
+open System.Numerics
 open Womb
 open Womb.Graphics
 open Womb.Types
-open System
 
 let DEFAULT_WIDTH = 800u
 let DEFAULT_HEIGHT = 600u
@@ -25,42 +26,58 @@ type GameState =
 
 let private initHandler (config:Config<GameState>) =
   let state = config.State
-  let triangles =
-    Primitives.ShadedObject.From
-      { state.Triangles with
-          FragmentShaderPaths = ["Resources/Shaders/fragment.glsl"]
-          VertexShaderPaths = ["Resources/Shaders/vertex.glsl"]
-      }
-      [|
-        0.0f; -0.5f; 0.0f;  // shared vertex
-        // first triangle
-        -0.9f; -0.5f; 0.0f; // left vertex
-        -0.45f; 0.5f; 0.0f; // top vertex
-        // second triangle
-        0.9f; -0.5f; 0.0f;  // right vertex
-        0.45f; 0.5f; 0.0f;  // top vertex
-      |]
-      [|
-        0u; 1u; 2u; // first triangle vertex order as array indices
-        0u; 3u; 4u; // second triangle vertex order as array indices
-      |]
-  match Display.compileShader triangles.VertexShaderPaths triangles.FragmentShaderPaths with
-  | Some(shader) -> 
-      { config with
-          State =
-            { GameState.Default with
-                Triangles =
-                  { triangles with
-                      Shader = shader
-                      VertexData = Primitives.VertexObjectData.From triangles.Vertices triangles.Indices } } }
+  let fragmentPaths = ["Resources/Shaders/fragment.glsl"]
+  let vertexPaths = ["Resources/Shaders/vertex.glsl"]
+  let vertices = [|
+    0.0f; -0.5f; 0.0f;  // shared vertex
+    // first triangle
+    -0.9f; -0.5f; 0.0f; // left vertex
+    -0.45f; 0.5f; 0.0f; // top vertex
+    // second triangle
+    0.9f; -0.5f; 0.0f;  // right vertex
+    0.45f; 0.5f; 0.0f;  // top vertex
+  |]
+  let indices = [|
+    0u; 1u; 2u; // first triangle vertex order as array indices
+    0u; 3u; 4u; // second triangle vertex order as array indices
+  |]
+  match Primitives.ShadedObject.CreateQuad vertexPaths fragmentPaths vertices indices with
+  | Some(primitive) ->
+    { config with
+        State =
+          { GameState.Default with
+              Triangles = primitive }}
   | None ->
-      Logging.fail "Failed to compile shader"
-      config
+    Logging.fail "Failed to create initial game state"
+    config
+
+let private calculateMatrices cameraPosition cameraTarget =
+  let viewMatrix = Matrix4x4.CreateLookAt(
+    cameraPosition,
+    cameraTarget,
+    Vector3.UnitY
+  )
+  let projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(-1f, 1f, -1f, 1f, 0f, 1f)
+  (viewMatrix, projectionMatrix)
 
 let private drawHandler (config:Config<GameState>) =
+  let cameraPosition = new Vector3(0f, 0f, 1f)
+  let cameraTarget = new Vector3(0f, 0f, 0f)
+  let (viewMatrix, projectionMatrix) = calculateMatrices cameraPosition cameraTarget
+
   let state = config.State
+  let scale = Vector3.One * 1.0f
+  let rotation = Vector3.UnitZ * 0.0f
   let displayConfig = Display.clear config.DisplayConfig
-  Primitives.drawShadedObject config state.Triangles
+  Primitives.ShadedObject.Draw
+    config
+    viewMatrix
+    projectionMatrix
+    state.Triangles
+    scale
+    rotation
+    Vector3.Zero
+    []
   { config with
       DisplayConfig = Display.swap displayConfig }
 

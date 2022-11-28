@@ -93,8 +93,11 @@ let compileShader vertexShaderPaths fragmentShaderPaths =
   )
 
   match linkShaderPrograms shaders with
-  | Some(shaderProgram) ->
-      Some(shaderProgram)
+  | Some(programId) ->
+      Some(
+        { Id = programId
+          FragmentPaths = fragmentShaderPaths
+          VertexPaths = vertexShaderPaths } )
   | None -> None
 
 let private initializeGraphicsContext (config:DisplayConfig) =
