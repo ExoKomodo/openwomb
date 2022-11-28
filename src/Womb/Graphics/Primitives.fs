@@ -152,6 +152,9 @@ type ShadedObject =
           | Matrix4x4Uniform(name, data) -> 
               let location = glGetUniformLocation shader.Id name
               glUniformMatrix4fv location 1 data
+          | Vector1Uniform(name, data) -> 
+              let location = glGetUniformLocation shader.Id name
+              glUniform1f location data
           | Vector2Uniform(name, data) -> 
               let location = glGetUniformLocation shader.Id name
               glUniform2f location data.X data.Y
