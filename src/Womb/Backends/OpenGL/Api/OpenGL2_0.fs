@@ -232,8 +232,8 @@ type private Uniform3i = delegate of int * int * int * int -> unit
 let mutable private _glUniform3i = Uniform3i(fun _ _ _ _ -> warn (notLinked<Uniform3i>()))
 let glUniform3i location value0 value1 value2 = _glUniform3i.Invoke(location, value0, value1, value2)
 
-type private Uniform4i = delegate of int * int * int * int * int -> int
-let mutable private _glUniform4i = Uniform4i(fun _ _ _ _ _ -> warn (notLinked<Uniform4i>()); 0; )
+type private Uniform4i = delegate of int * int * int * int * int -> unit
+let mutable private _glUniform4i = Uniform4i(fun _ _ _ _ _ -> warn (notLinked<Uniform4i>()))
 let glUniform4i location value0 value1 value2 value3 = _glUniform4i.Invoke(location, value0, value1, value2, value3)
 
 type private Uniform1fv = delegate of int * nativeptr<single> -> unit
@@ -287,6 +287,17 @@ let glUniformMatrix4fv location count (value:Matrix4x4) =
   |]
   use bufPtr = fixed buffer in
     _glUniformMatrix4fv.Invoke(location, count, false, bufPtr)
+
+type private UniformMatrix2x3fv = delegate of int * int * bool * nativeptr<single> -> unit
+let mutable private _glUniformMatrix2x3fv = UniformMatrix2x3fv(fun _ _ _ _ -> warn (notLinked<UniformMatrix2x3fv>()))
+let glUniformMatrix2x3fv location count (value:Matrix3x2) =
+  let buffer = [|
+    value.M11; value.M12;
+    value.M21; value.M22;
+    value.M31; value.M32;
+  |]
+  use bufPtr = fixed buffer in
+    _glUniformMatrix2x3fv.Invoke(location, count, false, bufPtr)
 
 type private ValidateProgram = delegate of uint -> unit
 let mutable private _glValidateProgram = ValidateProgram(fun _ -> warn (notLinked<ValidateProgram>()))
