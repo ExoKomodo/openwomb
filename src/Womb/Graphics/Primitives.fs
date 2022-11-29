@@ -135,7 +135,7 @@ type ShadedObject =
   
   static member private UseMvpShader<'T> (config:Config<'T>) (shader:ShaderProgram) (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (scale:Vector3) (rotation:Vector3) (translation:Vector3) uniforms =
     glUseProgram shader.Id
-    let mvpUniform = glGetUniformLocation shader.Id "mvp"
+    let mvpUniform = glGetUniformLocation shader.Id "in_mvp"
 
     let scaleMatrix = Matrix4x4.CreateScale(scale)
     let rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(rotation.Y, rotation.X, rotation.Z)
@@ -167,8 +167,19 @@ type ShadedObject =
   static member Draw<'T> (config:Config<'T>) (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (primitive:ShadedObject) (scale:Vector3) (rotation:Vector3) (translation:Vector3) (uniforms) =
     match primitive with
     | Quad(context, shader) ->
-      ShadedObject.UseMvpShader config shader viewMatrix projectionMatrix scale rotation translation (
-        Vector2Uniform("mouse", config.Mouse.Position)::uniforms)
+      ShadedObject.UseMvpShader
+        config
+        shader
+        viewMatrix
+        projectionMatrix
+        scale
+        rotation
+        translation
+        (
+          [
+            Vector2Uniform("in_mouse", config.Mouse.Position);
+            Vector2Uniform("", config.Mouse.Position);
+          ] @ uniforms )
       
       glBindVertexArray context.VAO
       glBindBuffer
