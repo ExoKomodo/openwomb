@@ -135,7 +135,7 @@ type ShadedObject =
   
   static member private UseMvpShader<'T> (config:Config<'T>) (shader:ShaderProgram) (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (scale:Vector3) (rotation:Vector3) (translation:Vector3) uniforms =
     glUseProgram shader.Id
-    let mvpUniform = glGetUniformLocation shader.Id "mvp"
+    let mvpUniform = glGetUniformLocation shader.Id "in_mvp"
 
     let scaleMatrix = Matrix4x4.CreateScale(scale)
     let rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(rotation.Y, rotation.X, rotation.Z)
@@ -152,23 +152,94 @@ type ShadedObject =
           | Matrix4x4Uniform(name, data) -> 
               let location = glGetUniformLocation shader.Id name
               glUniformMatrix4fv location 1 data
-          | Vector1Uniform(name, data) -> 
+          | Vector1Uniform(name, data) ->
               let location = glGetUniformLocation shader.Id name
               glUniform1f location data
-          | Vector2Uniform(name, data) -> 
+          | Vector2Uniform(name, data) ->
               let location = glGetUniformLocation shader.Id name
               glUniform2f location data.X data.Y
-          | Vector4Uniform(name, data) -> 
+          | Vector3Uniform(name, data) ->
+              let location = glGetUniformLocation shader.Id name
+              glUniform3f location data.X data.Y data.Z
+          | Vector4Uniform(name, data) ->
               let location = glGetUniformLocation shader.Id name
               glUniform4f location data.X data.Y data.Z data.W
+          | VectorUniform(name, data) ->
+              let location = glGetUniformLocation shader.Id name
+              match data.Length with
+              | 1 -> glUniform1f location data[0]
+              | 2 -> glUniform2f location data[0] data[1]
+              | 3 -> glUniform3f location data[0] data[1] data[2]
+              | 4 -> glUniform4f location data[0] data[1] data[2] data[3]
+              | len -> fail $"Unsupported IVectorUniform length {len} when trying to use shader"
+          | IVector1Uniform(name, x) ->
+              let location = glGetUniformLocation shader.Id name
+              glUniform1i location x
+          | IVector2Uniform(name, x, y) ->
+              let location = glGetUniformLocation shader.Id name
+              glUniform2i location x y
+          | IVector3Uniform(name, x, y, z) ->
+              let location = glGetUniformLocation shader.Id name
+              glUniform3i location x y z
+          | IVector4Uniform(name, x, y, z, w) ->
+              let location = glGetUniformLocation shader.Id name
+              glUniform4i location x y z w
+          | IVectorUniform(name, data) ->
+              let location = glGetUniformLocation shader.Id name
+              match data.Length with
+              | 1 -> glUniform1i location data[0]
+              | 2 -> glUniform2i location data[0] data[1]
+              | 3 -> glUniform3i location data[0] data[1] data[2]
+              | 4 -> glUniform4i location data[0] data[1] data[2] data[3]
+              | len -> fail $"Unsupported IVectorUniform length {len} when trying to use shader"
+          | UVector1Uniform(name, x) ->
+              let location = glGetUniformLocation shader.Id name
+              glUniform1ui location x
+          | UVector2Uniform(name, x, y) ->
+              let location = glGetUniformLocation shader.Id name
+              glUniform2ui location x y
+          | UVector3Uniform(name, x, y, z) ->
+              let location = glGetUniformLocation shader.Id name
+              glUniform3ui location x y z
+          | UVector4Uniform(name, x, y, z, w) ->
+              let location = glGetUniformLocation shader.Id name
+              glUniform4ui location x y z w
+          | UVectorUniform(name, data) ->
+              let location = glGetUniformLocation shader.Id name
+              match data.Length with
+              | 1 -> glUniform1ui location data[0]
+              | 2 -> glUniform2ui location data[0] data[1]
+              | 3 -> glUniform3ui location data[0] data[1] data[2]
+              | 4 -> glUniform4ui location data[0] data[1] data[2] data[3]
+              | len -> fail $"Unsupported UVectorUniform length {len} when trying to use shader"
       )
       uniforms |> ignore
   
   static member Draw<'T> (config:Config<'T>) (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (primitive:ShadedObject) (scale:Vector3) (rotation:Vector3) (translation:Vector3) (uniforms) =
     match primitive with
     | Quad(context, shader) ->
-      ShadedObject.UseMvpShader config shader viewMatrix projectionMatrix scale rotation translation (
-        Vector2Uniform("mouse", config.Mouse.Position)::uniforms)
+      ShadedObject.UseMvpShader
+        config
+        shader
+        viewMatrix
+        projectionMatrix
+        scale
+        rotation
+        translation
+        (
+          [
+            Vector2Uniform(
+              "in_mouse",
+              config.Mouse.Position
+            );
+            Vector2Uniform(
+              "in_viewport",
+              new Vector2(
+                config.DisplayConfig.Width |> single,
+                config.DisplayConfig.Height |> single
+              )
+            );
+          ] @ uniforms )
       
       glBindVertexArray context.VAO
       glBindBuffer
