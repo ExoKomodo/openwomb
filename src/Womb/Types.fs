@@ -1,6 +1,7 @@
 module Womb.Types
 
 open SDL2Bindings
+open System.Numerics
 open Womb.Graphics
 open Womb.Graphics.Types
 open Womb.Input.Types
@@ -48,3 +49,6 @@ type Config<'T> =
           { config with
               DisplayConfig = Display.swap displayConfig }
         StopHandler = stopHandler }
+
+    member this.VirtualMousePosition() =
+      this.Mouse.Position / new Vector2(single this.DisplayConfig.Width, single this.DisplayConfig.Height)
