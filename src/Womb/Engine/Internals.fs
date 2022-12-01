@@ -7,21 +7,46 @@ open Womb.Graphics.Types
 open Womb.Input.Types
 open Womb.Logging
 open Womb.Types
+open Womb.Backends.OpenGL.Api
 
-let internal handleQuit (config:Config<'T>) (event:SDL.SDL_Event) =
+let private handleQuit (config:Config<'T>) (event:SDL.SDL_Event) =
   config.StopHandler config
 
-let internal handleEvent (config:Config<'T>) (event:SDL.SDL_Event) =
+let private handleWindowResize (config:Config<'T>) (event:SDL.SDL_WindowEvent) =
+  let width = event.data1
+  let height = event.data2
+  
+  info $"Width: {width} height: {height}"
+
+  glViewport
+    0
+    0
+    (int width)
+    (int height)
+  
+  { config with
+      DisplayConfig =
+        {config.DisplayConfig with
+            Width = uint width
+            Height = uint height } }
+
+let private handleWindowEvent (config:Config<'T>) (event:SDL.SDL_WindowEvent) =
+  match event.windowEvent with
+  | SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED -> handleWindowResize config event
+  | _ -> config
+
+let private handleEvent (config:Config<'T>) (event:SDL.SDL_Event) =
   match event.typeFSharp with
   | SDL.SDL_EventType.SDL_KEYUP -> config.KeyUpHandler config event
   | SDL.SDL_EventType.SDL_QUIT -> handleQuit config event
+  | SDL.SDL_EventType.SDL_WINDOWEVENT -> handleWindowEvent config event.window
   | _ -> config
 
 ////////////
 // Module //
 ////////////
 
-let internal pollMouseState<'T> (config:Config<'T>) : MouseState =
+let private pollMouseState<'T> (config:Config<'T>) : MouseState =
   let (_, x, y) = SDL.SDL_GetMouseState()
   let (adjustedX, adjustedY) = (
     x,
@@ -47,12 +72,6 @@ let internal shutdown (config: Config<'T>) : Config<'T> =
   SDL.SDL_Quit()
   config.StopHandler config
 
-let drawBegin (config:DisplayConfig) =
-  Display.clear config
-
-let drawEnd (config:DisplayConfig) =
-  Display.swap config
-
 let rec internal updateLoop<'T> (config:Config<'T>) : Config<'T> =
   if not config.IsRunning then
     config
@@ -61,3 +80,9 @@ let rec internal updateLoop<'T> (config:Config<'T>) : Config<'T> =
       |> eventLoop
       |> config.DrawHandler
       |> updateLoop
+
+let drawBegin (config:DisplayConfig) =
+  Display.clear config
+
+let drawEnd (config:DisplayConfig) =
+  Display.swap config
