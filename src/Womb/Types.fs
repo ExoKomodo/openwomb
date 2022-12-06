@@ -51,4 +51,8 @@ type Config<'T> =
         StopHandler = stopHandler }
 
     member this.VirtualMousePosition() =
-      this.Mouse.Position / new Vector2(single this.DisplayConfig.Width, single this.DisplayConfig.Height)
+      let virtualPosition = (
+        this.Mouse.Position /
+        new Vector2(this.DisplayConfig.Width |> single, this.DisplayConfig.Height |> single)
+      )
+      (virtualPosition.X, virtualPosition.Y)

@@ -8,7 +8,7 @@ type private ActiveTexture = delegate of uint -> unit
 let mutable private _glActiveTexture = ActiveTexture(fun _ -> warn (notLinked<ActiveTexture> ()))
 let glActiveTexture texture = _glActiveTexture.Invoke(texture)
 
-type private SampleCoverage = delegate of float * bool -> unit
+type private SampleCoverage = delegate of single * bool -> unit
 let mutable private _glSampleCoverage = SampleCoverage(fun _ _ -> warn (notLinked<SampleCoverage> ()))
 let glSampleCoverage value invert = _glSampleCoverage.Invoke(value, invert)
 
