@@ -2,14 +2,33 @@ module Womb.Graphics.Display
 
 open SDL2Bindings
 open System.IO
+open System.Linq
 open Womb.Backends.OpenGL.Api
 open Womb.Backends.OpenGL.Api.Constants
 open Womb.Graphics.Types
 open Womb.Logging
 
-////////////C
+////////////
 // Module //
 ////////////
+
+type ShaderInfo =
+  { Id : uint;
+    Path : string;
+    Source: string; }
+  
+  static member Default =
+    { Id = 0u
+      Path = ""
+      Source = "" }
+
+let mutable shaderCache = Map.empty<string, ShaderInfo>
+let getShaderInfo shader =
+  match Map.filter (
+    fun _ value -> value.Id = shader
+  ) shaderCache with
+  | items when Map.isEmpty items -> None
+  | items -> (Map.values items).Single() |> Some
 
 let private shaderTypeToString shaderType =
   match shaderType with
@@ -19,24 +38,33 @@ let private shaderTypeToString shaderType =
 
 let private buildShader
   shaderType
+  shaderPath
   shaderSource =
-    let shaderTypeString = shaderTypeToString shaderType
-    let shader = glCreateShader shaderType
-    glShaderSource
-      shader
-      shaderSource
-    glCompileShader shader
-    let success =
-      glGetShaderiv
-        shader
-        GL_COMPILE_STATUS
-    if success = 0 then
-      fail $"Failed to compile %s{shaderTypeString} shader with error:"
-      fail (glGetShaderInfoLog shader)
-      None
-    else
-      debug $"Successfully compiled %s{shaderTypeString} shader"
-      Some shader
+    match shaderCache.TryGetValue(shaderPath) with
+    | true, shader -> Some shader
+    | _ ->
+        let shaderTypeString = shaderTypeToString shaderType
+        let shader = glCreateShader shaderType
+        glShaderSource
+          shader
+          shaderSource
+        glCompileShader shader
+        let success =
+          glGetShaderiv
+            shader
+            GL_COMPILE_STATUS
+        if success = 0 then
+          fail $"Failed to compile %s{shaderTypeString} shader with error:"
+          fail (glGetShaderInfoLog shader)
+          None
+        else
+          debug $"Successfully compiled %s{shaderTypeString} shader"
+          let shaderInfo =
+            { Id = shader
+              Path = shaderPath
+              Source = shaderSource }
+          shaderCache <- Map.add shaderPath shaderInfo shaderCache
+          Some shaderInfo
 
 let private linkShaderPrograms shaders =
   let shaderProgram = glCreateProgram()
@@ -51,9 +79,10 @@ let private linkShaderPrograms shaders =
 
   List.map
     (
-      fun shaderId -> (debug
-        $"Successfully linked shader program with shader (ID:%d{shaderId})"
-      )
+      fun shader ->
+        match getShaderInfo shader with
+        | Some shaderInfo -> debug $"Successfully linked shader program with shader (ID:{shaderInfo.Id}, Path:{shaderInfo.Path})"
+        | None -> ()
     )
     shaders |> ignore
   
@@ -70,7 +99,7 @@ let private linkShaderPrograms shaders =
 
 let private _compileShader shaderPath shaderType =
   let shaderSource = File.ReadAllText(shaderPath)
-  buildShader shaderType shaderSource
+  buildShader shaderType shaderPath shaderSource
 
 let compileShader vertexShaderPaths fragmentShaderPaths =
   let shaderInfo = (
@@ -82,11 +111,14 @@ let compileShader vertexShaderPaths fragmentShaderPaths =
         (fun shaderPath -> shaderPath, GL_FRAGMENT_SHADER)
         fragmentShaderPaths)
   )
-  let shaders: list<uint> = (List.choose  id
+  let shaders = (List.choose  id
     (
       List.map
-        (fun (shaderPath, shaderType) ->
-          _compileShader shaderPath shaderType
+        (
+          fun (shaderPath, shaderType) ->
+            match _compileShader shaderPath shaderType with
+            | Some shaderInfo -> Some shaderInfo.Id
+            | None -> None
         )
         shaderInfo
     )
