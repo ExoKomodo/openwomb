@@ -60,7 +60,7 @@ let private calculateMatrices cameraPosition cameraTarget =
   let projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(-1f, 1f, -1f, 1f, 0f, 1f)
   (viewMatrix, projectionMatrix)
 
-let private drawHandler (config:Config<GameState>) =
+let private loopHandler (config:Config<GameState>) =
   let cameraPosition = new Vector3(0f, 0f, 1f)
   let cameraTarget = new Vector3(0f, 0f, 0f)
   let (viewMatrix, projectionMatrix) = calculateMatrices cameraPosition cameraTarget
@@ -101,4 +101,4 @@ let main argv =
       GameState.Default
       (Some initHandler)
       None
-      (Some drawHandler) ).ExitCode
+      (Some loopHandler) ).ExitCode

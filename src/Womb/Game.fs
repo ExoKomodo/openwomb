@@ -13,8 +13,8 @@ let play<'T>
   height
   (state:'T)
   (initHandlerOpt: option<Config<'T> -> Config<'T>>)
-  (keyUpHandlerOpt: option<Config<'T> -> SDL.SDL_Event -> Config<'T>>)
-  (drawHandlerOpt: option<Config<'T> -> Config<'T>>) =
+  (eventHandlerOpt: option<Config<'T> -> SDL.SDL_Event -> Config<'T>>)
+  (loopHandlerOpt: option<Config<'T> -> Config<'T>>) =
     info $"Starting up %s{title}"
     let config =
       { Config.Default state with
@@ -30,14 +30,14 @@ let play<'T>
             match initHandlerOpt with
               | Some initHandler -> initHandler
               | None -> config.InitHandler
-          KeyUpHandler =
-            match keyUpHandlerOpt with
-              | Some keyUpHandler -> keyUpHandler
-              | None -> config.KeyUpHandler
-          DrawHandler =
-            match drawHandlerOpt with
-              | Some drawHandler -> drawHandler
-              | None -> config.DrawHandler }
+          EventHandler =
+            match eventHandlerOpt with
+              | Some eventHandler -> eventHandler
+              | None -> config.EventHandler
+          LoopHandler =
+            match loopHandlerOpt with
+              | Some loopHandler -> loopHandler
+              | None -> config.LoopHandler }
 
     info "Loaded starting config"
 
