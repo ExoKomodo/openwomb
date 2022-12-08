@@ -157,13 +157,16 @@ type ShadedObject =
               glUniform1f location data
           | Vector2Uniform(name, data) ->
               let location = glGetUniformLocation shader.Id name
-              glUniform2f location data.X data.Y
+              let (x, y) = data
+              glUniform2f location x y
           | Vector3Uniform(name, data) ->
               let location = glGetUniformLocation shader.Id name
-              glUniform3f location data.X data.Y data.Z
+              let (x, y, z) = data
+              glUniform3f location x y z
           | Vector4Uniform(name, data) ->
               let location = glGetUniformLocation shader.Id name
-              glUniform4f location data.X data.Y data.Z data.W
+              let (x, y, z, w) = data
+              glUniform4f location x y z w
           | VectorUniform(name, data) ->
               let location = glGetUniformLocation shader.Id name
               match data.Length with
@@ -175,14 +178,17 @@ type ShadedObject =
           | IVector1Uniform(name, x) ->
               let location = glGetUniformLocation shader.Id name
               glUniform1i location x
-          | IVector2Uniform(name, x, y) ->
+          | IVector2Uniform(name, data) ->
               let location = glGetUniformLocation shader.Id name
+              let (x, y) = data
               glUniform2i location x y
-          | IVector3Uniform(name, x, y, z) ->
+          | IVector3Uniform(name, data) ->
               let location = glGetUniformLocation shader.Id name
+              let (x, y, z) = data
               glUniform3i location x y z
-          | IVector4Uniform(name, x, y, z, w) ->
+          | IVector4Uniform(name, data) ->
               let location = glGetUniformLocation shader.Id name
+              let (x, y, z, w) = data
               glUniform4i location x y z w
           | IVectorUniform(name, data) ->
               let location = glGetUniformLocation shader.Id name
@@ -195,14 +201,17 @@ type ShadedObject =
           | UVector1Uniform(name, x) ->
               let location = glGetUniformLocation shader.Id name
               glUniform1ui location x
-          | UVector2Uniform(name, x, y) ->
+          | UVector2Uniform(name, data) ->
               let location = glGetUniformLocation shader.Id name
+              let (x, y) = data
               glUniform2ui location x y
-          | UVector3Uniform(name, x, y, z) ->
+          | UVector3Uniform(name, data) ->
               let location = glGetUniformLocation shader.Id name
+              let (x, y, z) = data
               glUniform3ui location x y z
-          | UVector4Uniform(name, x, y, z, w) ->
+          | UVector4Uniform(name, data) ->
               let location = glGetUniformLocation shader.Id name
+              let (x, y, z, w) = data
               glUniform4ui location x y z w
           | UVectorUniform(name, data) ->
               let location = glGetUniformLocation shader.Id name
@@ -234,7 +243,7 @@ type ShadedObject =
             );
             Vector2Uniform(
               "in_viewport",
-              new Vector2(
+              (
                 config.DisplayConfig.Width |> single,
                 config.DisplayConfig.Height |> single
               )

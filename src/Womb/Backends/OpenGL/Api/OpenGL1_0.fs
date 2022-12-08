@@ -194,7 +194,7 @@ let mutable private _glGetBooleanv =
   GetBooleanv(fun _ _ -> warn (notLinked<GetBooleanv>()))
 let glGetBooleanv parameterName data = _glGetBooleanv.Invoke(parameterName, data)
 
-type private GetDoublev = delegate of uint * nativeptr<float> -> unit
+type private GetDoublev = delegate of uint * nativeptr<single> -> unit
 let mutable private _glGetDoublev =
   GetDoublev(fun _ _ -> warn (notLinked<GetDoublev>()))
 let glGetDoublev parameterName data = _glGetDoublev.Invoke(parameterName, data)
@@ -268,7 +268,7 @@ let mutable private _glIsEnabled =
       false )
 let glIsEnabled cap = _glIsEnabled.Invoke(cap)
 
-type private DepthRange = delegate of float * float -> unit
+type private DepthRange = delegate of single * single -> unit
 let mutable private _glDepthRange =
   DepthRange(fun _ _ -> warn (notLinked<DepthRange>()))
 let glDepthRange near far = _glDepthRange.Invoke(near, far)

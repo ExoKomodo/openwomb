@@ -1,8 +1,8 @@
 module Womb.Graphics.Types
 
-open System.Numerics
 open Womb.Backends.OpenGL.Api
 open Womb.Backends.OpenGL.Api.Constants
+open Womb.Lib.Types
 open Womb.Logging
 
 ///////////
@@ -40,19 +40,19 @@ type ShaderProgram =
         VertexPaths = list.Empty }
 
 type Uniform =
-  | Matrix4x4Uniform of Name:string * Data:Matrix4x4
-  | Vector1Uniform of Name:string * Data:single
+  | Matrix4x4Uniform of Name:string * Data:System.Numerics.Matrix4x4
+  | Vector1Uniform of Name:string * Data:Vector1
   | Vector2Uniform of Name:string * Data:Vector2
   | Vector3Uniform of Name:string * Data:Vector3
   | Vector4Uniform of Name:string * Data:Vector4
   | VectorUniform of Name:string * Data:array<single>
-  | IVector1Uniform of Name:string * Data:int
-  | IVector2Uniform of Name:string * Data:int * int
-  | IVector3Uniform of Name:string * Data:int * int * int
-  | IVector4Uniform of Name:string * Data:int * int * int * int
+  | IVector1Uniform of Name:string * Data:IVector1
+  | IVector2Uniform of Name:string * Data:IVector2
+  | IVector3Uniform of Name:string * Data:IVector3
+  | IVector4Uniform of Name:string * Data:IVector4
   | IVectorUniform of Name:string * Data:array<int>
-  | UVector1Uniform of Name:string * Data:uint
-  | UVector2Uniform of Name:string * Data:uint * uint
-  | UVector3Uniform of Name:string * Data:uint * uint * uint
-  | UVector4Uniform of Name:string * Data:uint * uint * uint * uint
+  | UVector1Uniform of Name:string * Data:UVector1
+  | UVector2Uniform of Name:string * Data:UVector2
+  | UVector3Uniform of Name:string * Data:UVector3
+  | UVector4Uniform of Name:string * Data:UVector4
   | UVectorUniform of Name:string * Data:array<uint>

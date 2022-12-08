@@ -22,6 +22,7 @@
     
     <!-- Logging -->
     <Compile Include="Logging.fs" />
+    <Compile Include="Lib/Types.fs" />
     <!-- OpenGL -->
     <Compile Include="Backends/OpenGL/Api/Constants/OpenGL1_0.fs" />
     <Compile Include="Backends/OpenGL/Api/Constants/OpenGL1_1.fs" />
