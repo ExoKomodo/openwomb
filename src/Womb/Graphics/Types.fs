@@ -1,8 +1,8 @@
 module Womb.Graphics.Types
 
-open Paint.Lib.Types
 open Womb.Backends.OpenGL.Api
 open Womb.Backends.OpenGL.Api.Constants
+open Womb.Lib.Types
 open Womb.Logging
 
 ///////////
@@ -40,7 +40,7 @@ type ShaderProgram =
         VertexPaths = list.Empty }
 
 type Uniform =
-  | Matrix4x4Uniform of Name:string * Data:Matrix4x4
+  | Matrix4x4Uniform of Name:string * Data:System.Numerics.Matrix4x4
   | Vector1Uniform of Name:string * Data:Vector1
   | Vector2Uniform of Name:string * Data:Vector2
   | Vector3Uniform of Name:string * Data:Vector3

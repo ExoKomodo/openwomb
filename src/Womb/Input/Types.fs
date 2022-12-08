@@ -1,9 +1,9 @@
 module Womb.Input.Types
 
-open System.Numerics
+open Womb.Lib.Types
 
 type MouseState =
   { Position: Vector2 }
 
     static member Default = {
-      Position = Vector2.Zero; }
+      Position = (0f, 0f) }
