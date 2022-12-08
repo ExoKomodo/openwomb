@@ -16,8 +16,8 @@ type Config<'T> =
     State: 'T;
     Mouse: MouseState;
     InitHandler: Config<'T> -> Config<'T>;
-    KeyUpHandler: Config<'T> -> SDL.SDL_Event -> Config<'T>;
-    DrawHandler: Config<'T> -> Config<'T>;
+    EventHandler: Config<'T> -> SDL.SDL_Event -> Config<'T>;
+    LoopHandler: Config<'T> -> Config<'T>;
     StopHandler: Config<'T> -> Config<'T>; }
 
     static member Default<'T> (state:'T) =
@@ -37,14 +37,14 @@ type Config<'T> =
         State = state
         Mouse = MouseState.Default
         InitHandler = fun config -> config
-        KeyUpHandler = fun config (event:SDL.SDL_Event) ->
+        EventHandler = fun config (event:SDL.SDL_Event) ->
           match event.key.keysym.sym with
           | SDL.SDL_Keycode.SDLK_ESCAPE -> stopHandler config
           | SDL.SDL_Keycode.SDLK_f ->
             { config with
                 DisplayConfig = Display.toggleFullscreen config.DisplayConfig }
           | _ -> config
-        DrawHandler = fun config ->
+        LoopHandler = fun config ->
           let displayConfig = Display.clear config.DisplayConfig
           { config with
               DisplayConfig = Display.swap displayConfig }

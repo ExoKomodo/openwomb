@@ -37,9 +37,12 @@ let private handleWindowEvent (config:Config<'T>) (event:SDL.SDL_WindowEvent) =
 
 let private handleEvent (config:Config<'T>) (event:SDL.SDL_Event) =
   match event.typeFSharp with
-  | SDL.SDL_EventType.SDL_KEYUP -> config.KeyUpHandler config event
-  | SDL.SDL_EventType.SDL_QUIT -> handleQuit config event
   | SDL.SDL_EventType.SDL_WINDOWEVENT -> handleWindowEvent config event.window
+  | SDL.SDL_EventType.SDL_QUIT -> handleQuit config event
+  | SDL.SDL_EventType.SDL_KEYUP
+    | SDL.SDL_EventType.SDL_KEYDOWN
+    | SDL.SDL_EventType.SDL_MOUSEBUTTONUP
+    | SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN -> config.EventHandler config event
   | _ -> config
 
 ////////////
@@ -78,7 +81,7 @@ let rec internal updateLoop<'T> (config:Config<'T>) : Config<'T> =
   else
     pollInputs config
       |> eventLoop
-      |> config.DrawHandler
+      |> config.LoopHandler
       |> updateLoop
 
 let drawBegin (config:DisplayConfig) =
