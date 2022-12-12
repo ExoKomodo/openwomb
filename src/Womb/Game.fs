@@ -20,7 +20,7 @@ let play<'T>
       { Config.Default state with
           IsRunning = true
           DisplayConfig =
-            { DisplayConfig.Default with
+            { DisplayConfig.Default() with
                 Title = "Hello World"
                 Width = width
                 Height = height } }

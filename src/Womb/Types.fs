@@ -29,7 +29,7 @@ type Config<'T> =
               IsRunning = false }
         else
           config
-      { DisplayConfig = DisplayConfig.Default
+      { DisplayConfig = DisplayConfig.Default()
         IsRunning = false
         IsShutdown = false
         ExitCode = 0

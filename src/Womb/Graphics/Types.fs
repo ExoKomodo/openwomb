@@ -20,7 +20,7 @@ type DisplayConfig =
     Window: nativeint;
     Context: nativeint; }
 
-    static member Default =
+    static member Default() =
       { Width = 800u
         Height = 600u
         Title = "Womb"
@@ -34,7 +34,7 @@ type ShaderProgram =
     FragmentPaths: list<string>;
     VertexPaths: list<string>; }
 
-    static member Default =
+    static member Default() =
       { Id = 0u
         FragmentPaths = list.Empty
         VertexPaths = list.Empty }
