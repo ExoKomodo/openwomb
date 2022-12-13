@@ -2,11 +2,11 @@
 
 #nowarn "9" // Unverifiable IL due to fixed expression and NativePtr library usage
 
-open System.Numerics
-open Womb.Logging
 open Womb.Backends.OpenGL.Api
 open Womb.Backends.OpenGL.Api.Constants
 open Womb.Graphics.Types
+open Womb.Lib.Types
+open Womb.Logging
 open Womb.Types
 
 type ShadedObjectContext =
@@ -98,7 +98,7 @@ type ShadedObject =
 
   static member Default = ShadedObject.DefaultQuad
 
-  static member CreateQuad vertexPaths fragmentPaths vertices indices =
+  static member CreateQuad vertexPaths fragmentPaths vertices indices transform =
     match (
       Display.compileShader
         vertexPaths
@@ -108,7 +108,7 @@ type ShadedObject =
         Quad(
           ShadedObjectContext.From vertices indices,
           shader,
-          Womb.Lib.Types.Transform.Default()
+          transform
         ) |> Some
     | None ->
         fail $"Failed to compile quad shaders:\n{vertexPaths}\n{fragmentPaths}"
@@ -138,13 +138,16 @@ type ShadedObject =
         transform
       )
   
-  static member private UseMvpShader<'T> (config:Config<'T>) (shader:ShaderProgram) (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (scale:Vector3) (rotation:Vector3) (translation:Vector3) uniforms =
+  static member private UseMvpShader<'T> (config:Config<'T>) (shader:ShaderProgram) (viewMatrix:System.Numerics.Matrix4x4) (projectionMatrix:System.Numerics.Matrix4x4) (transform:Transform) uniforms =
     glUseProgram shader.Id
     let mvpUniform = glGetUniformLocation shader.Id "in_mvp"
 
-    let scaleMatrix = Matrix4x4.CreateScale(scale)
-    let rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(rotation.Y, rotation.X, rotation.Z)
-    let translationMatrix = Matrix4x4.CreateTranslation(translation)
+    let (x, y, z) = transform.Scale
+    let scaleMatrix = System.Numerics.Matrix4x4.CreateScale(x, y, z)
+    let (x, y, z) = transform.Rotation
+    let rotationMatrix = System.Numerics.Matrix4x4.CreateFromYawPitchRoll(y, x, z)
+    let (x, y, z) = transform.Translation
+    let translationMatrix = System.Numerics.Matrix4x4.CreateTranslation(x, y, z)
     let modelMatrix = scaleMatrix * rotationMatrix * translationMatrix
 
     let mvp = modelMatrix * viewMatrix * projectionMatrix
@@ -229,7 +232,7 @@ type ShadedObject =
       )
       uniforms |> ignore
   
-  static member Draw<'T> (config:Config<'T>) (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (primitive:ShadedObject) (scale:Vector3) (rotation:Vector3) (translation:Vector3) (uniforms) =
+  static member Draw<'T> (config:Config<'T>) (viewMatrix:System.Numerics.Matrix4x4) (projectionMatrix:System.Numerics.Matrix4x4) (primitive:ShadedObject) (uniforms) =
     match primitive with
     | Quad(context, shader, transform) ->
       ShadedObject.UseMvpShader
@@ -237,9 +240,7 @@ type ShadedObject =
         shader
         viewMatrix
         projectionMatrix
-        scale
-        rotation
-        translation
+        transform
         (
           [
             Vector2Uniform(
