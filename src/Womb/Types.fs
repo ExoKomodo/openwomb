@@ -1,10 +1,11 @@
 module Womb.Types
 
 open SDL2Bindings
-open System.Numerics
+open System.Diagnostics
 open Womb.Graphics
 open Womb.Graphics.Types
 open Womb.Input.Types
+open Womb.Lib.Math
 open Womb.Logging
 
 type Config<'T> =
@@ -18,7 +19,11 @@ type Config<'T> =
     InitHandler: Config<'T> -> Config<'T>;
     EventHandler: Config<'T> -> SDL.SDL_Event -> Config<'T>;
     LoopHandler: Config<'T> -> Config<'T>;
-    StopHandler: Config<'T> -> Config<'T>; }
+    StopHandler: Config<'T> -> Config<'T>;
+    FrameTimer: Stopwatch;
+    FrameDelta: System.TimeSpan;
+    OverallTimer: Stopwatch;
+    OverallDelta: System.TimeSpan; }
 
     static member Default<'T> (state:'T) =
       let stopHandler config =
@@ -48,12 +53,18 @@ type Config<'T> =
           let displayConfig = Display.clear config.DisplayConfig
           { config with
               DisplayConfig = Display.swap displayConfig }
-        StopHandler = stopHandler }
+        StopHandler = stopHandler
+        OverallTimer = new Stopwatch()
+        FrameTimer = new Stopwatch()
+        FrameDelta = new System.TimeSpan()
+        OverallDelta = new System.TimeSpan() }
 
     member this.VirtualMousePosition() =
       let (x, y) = this.Mouse.Position
+      let viewport = new System.Numerics.Vector2(this.DisplayConfig.Width |> single, this.DisplayConfig.Height |> single)
+      let curried_map = map 0f 1f -1f 1f
       let virtualPosition = (
-        new Vector2(x, y) /
-        new Vector2(this.DisplayConfig.Width |> single, this.DisplayConfig.Height |> single)
+        new System.Numerics.Vector2(x, y) /
+        viewport
       )
-      (virtualPosition.X, virtualPosition.Y)
+      (curried_map virtualPosition.X, curried_map virtualPosition.Y)

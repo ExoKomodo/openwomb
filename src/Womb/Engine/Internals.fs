@@ -75,11 +75,23 @@ let internal shutdown (config: Config<'T>) : Config<'T> =
   SDL.SDL_Quit()
   config.StopHandler config
 
+let clock config =
+  config.FrameTimer.Stop()
+  config.OverallTimer.Stop()
+  let (frame, overall) = (config.FrameTimer.Elapsed, config.OverallTimer.Elapsed)
+  config.FrameTimer.Start()
+  { config with
+      FrameDelta = frame
+      OverallDelta = overall }
+
 let rec internal updateLoop<'T> (config:Config<'T>) : Config<'T> =
   if not config.IsRunning then
+    config.FrameTimer.Stop()
+    config.OverallTimer.Stop()
     config
   else
     pollInputs config
+      |> clock
       |> eventLoop
       |> config.LoopHandler
       |> updateLoop

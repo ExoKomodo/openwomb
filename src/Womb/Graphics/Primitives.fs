@@ -90,25 +90,41 @@ type ShadedObjectContext =
         |> ShadedObjectContext.UpdateIndices indices
 
 type ShadedObject =
-  | Quad of Context:ShadedObjectContext * Shader:ShaderProgram * Transform:Womb.Lib.Types.Transform
+  | Quad of Context:ShadedObjectContext * Shader:ShaderProgram * Transform:Womb.Lib.Types.Transform * Width:single * Height:single
 
 
   static member DefaultQuad =
-    Quad(ShadedObjectContext.Default(), ShaderProgram.Default(), Womb.Lib.Types.Transform.Default())
+    Quad(ShadedObjectContext.Default(), ShaderProgram.Default(), Transform.Default(), 0f, 0f)
 
   static member Default = ShadedObject.DefaultQuad
 
-  static member CreateQuad vertexPaths fragmentPaths vertices indices transform =
+  static member CreateQuad vertexPaths fragmentPaths transform width height =
     match (
       Display.compileShader
         vertexPaths
         fragmentPaths
     ) with
     | Some shader ->
+        let vertices = [|
+          // bottom left
+          -width / 2.0f; -height / 2.0f; 0.0f;
+          // shared top left
+          -width / 2.0f; height / 2.0f; 0.0f;
+          // shared bottom right
+          width / 2.0f; -height / 2.0f; 0.0f;
+          // top right
+          width / 2.0f; height / 2.0f; 0.0f;
+        |]
+        let indices = [|
+          0u; 1u; 2u; // first triangle vertex order as array indices
+          1u; 2u; 3u; // second triangle vertex order as array indices
+        |]
         Quad(
           ShadedObjectContext.From vertices indices,
           shader,
-          transform
+          transform,
+          width,
+          height
         ) |> Some
     | None ->
         fail $"Failed to compile quad shaders:\n{vertexPaths}\n{fragmentPaths}"
@@ -116,26 +132,32 @@ type ShadedObject =
 
   static member UpdateIndices (indices) (primitive: ShadedObject) : ShadedObject =
     match primitive with
-    | Quad(context, shader, transform) -> Quad(
+    | Quad(context, shader, transform, width, height) -> Quad(
         ShadedObjectContext.UpdateIndices indices context,
         shader,
-        transform
+        transform,
+        width,
+        height
       )
 
   static member UpdateVertices (vertices) (primitive: ShadedObject) : ShadedObject =
     match primitive with
-    | Quad(context, shader, transform) -> Quad(
+    | Quad(context, shader, transform, width, height) -> Quad(
         ShadedObjectContext.UpdateVertices vertices context,
         shader,
-        transform
+        transform,
+        width,
+        height
       )
 
   static member Update (vertices) (indices) (primitive: ShadedObject) : ShadedObject =
     match primitive with
-    | Quad(context, shader, transform) -> Quad(
+    | Quad(context, shader, transform, width, height) -> Quad(
         ShadedObjectContext.Update vertices indices context,
         shader,
-        transform
+        transform,
+        width,
+        height
       )
   
   static member private UseMvpShader<'T> (config:Config<'T>) (shader:ShaderProgram) (viewMatrix:System.Numerics.Matrix4x4) (projectionMatrix:System.Numerics.Matrix4x4) (transform:Transform) uniforms =
@@ -234,7 +256,7 @@ type ShadedObject =
   
   static member Draw<'T> (config:Config<'T>) (viewMatrix:System.Numerics.Matrix4x4) (projectionMatrix:System.Numerics.Matrix4x4) (primitive:ShadedObject) (uniforms) =
     match primitive with
-    | Quad(context, shader, transform) ->
+    | Quad(context, shader, transform, width, height) ->
       ShadedObject.UseMvpShader
         config
         shader
