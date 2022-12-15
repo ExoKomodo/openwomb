@@ -79,7 +79,9 @@ let clock config =
   config.FrameTimer.Stop()
   config.OverallTimer.Stop()
   let (frame, overall) = (config.FrameTimer.Elapsed, config.OverallTimer.Elapsed)
+  config.FrameTimer.Reset()
   config.FrameTimer.Start()
+  config.OverallTimer.Start()
   { config with
       FrameDelta = frame
       OverallDelta = overall }
