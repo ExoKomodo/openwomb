@@ -92,11 +92,21 @@ type ShadedObjectContext =
 type ShadedObject =
   | Quad of Context:ShadedObjectContext * Shader:ShaderProgram * Transform:Womb.Lib.Types.Transform * Width:single * Height:single
 
-
   static member DefaultQuad =
     Quad(ShadedObjectContext.Default(), ShaderProgram.Default(), Transform.Default(), 0f, 0f)
 
   static member Default = ShadedObject.DefaultQuad
+
+  static member Contains primitive point =
+    match primitive with
+    | Quad(context, shader, transform, width, height) ->
+        let (x, y, _) = transform.Translation
+        let rect = new System.Drawing.RectangleF(x - (width / 2f), y - (height / 2f), width, height)
+        let (x, y) = point
+        if rect.Contains(x, y) then
+          Some point
+        else
+          None
 
   static member CreateQuad vertexPaths fragmentPaths transform width height =
     match (
