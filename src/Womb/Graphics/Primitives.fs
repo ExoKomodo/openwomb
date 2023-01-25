@@ -2,11 +2,11 @@
 
 #nowarn "9" // Unverifiable IL due to fixed expression and NativePtr library usage
 
-open System.Numerics
-open Womb.Logging
 open Womb.Backends.OpenGL.Api
 open Womb.Backends.OpenGL.Api.Constants
 open Womb.Graphics.Types
+open Womb.Lib.Types
+open Womb.Logging
 open Womb.Types
 
 type ShadedObjectContext =
@@ -16,7 +16,7 @@ type ShadedObjectContext =
     Vertices: array<single>;
     Indices: array<uint>; }
 
-    static member Default =
+    static member Default () =
       { VAO = 0u
         VBO = 0u
         EBO = 0u
@@ -90,23 +90,51 @@ type ShadedObjectContext =
         |> ShadedObjectContext.UpdateIndices indices
 
 type ShadedObject =
-  | Quad of Context:ShadedObjectContext * Shader:ShaderProgram
+  | Quad of Context:ShadedObjectContext * Shader:ShaderProgram * Transform:Womb.Lib.Types.Transform * Width:single * Height:single
 
   static member DefaultQuad =
-    Quad(ShadedObjectContext.Default, ShaderProgram.Default)
+    Quad(ShadedObjectContext.Default(), ShaderProgram.Default(), Transform.Default(), 0f, 0f)
 
   static member Default = ShadedObject.DefaultQuad
 
-  static member CreateQuad vertexPaths fragmentPaths vertices indices =
+  static member Contains primitive point =
+    match primitive with
+    | Quad(context, shader, transform, width, height) ->
+        let (x, y, _) = transform.Translation
+        let rect = new System.Drawing.RectangleF(x - (width / 2f), y - (height / 2f), width, height)
+        let (x, y) = point
+        if rect.Contains(x, y) then
+          Some point
+        else
+          None
+
+  static member CreateQuad vertexPaths fragmentPaths transform width height =
     match (
       Display.compileShader
         vertexPaths
         fragmentPaths
     ) with
     | Some shader ->
+        let vertices = [|
+          // bottom left
+          -width / 2.0f; -height / 2.0f; 0.0f;
+          // shared top left
+          -width / 2.0f; height / 2.0f; 0.0f;
+          // shared bottom right
+          width / 2.0f; -height / 2.0f; 0.0f;
+          // top right
+          width / 2.0f; height / 2.0f; 0.0f;
+        |]
+        let indices = [|
+          0u; 1u; 2u; // first triangle vertex order as array indices
+          1u; 2u; 3u; // second triangle vertex order as array indices
+        |]
         Quad(
           ShadedObjectContext.From vertices indices,
-          shader
+          shader,
+          transform,
+          width,
+          height
         ) |> Some
     | None ->
         fail $"Failed to compile quad shaders:\n{vertexPaths}\n{fragmentPaths}"
@@ -114,32 +142,44 @@ type ShadedObject =
 
   static member UpdateIndices (indices) (primitive: ShadedObject) : ShadedObject =
     match primitive with
-    | Quad(context, shader) -> Quad(
+    | Quad(context, shader, transform, width, height) -> Quad(
         ShadedObjectContext.UpdateIndices indices context,
-        shader
+        shader,
+        transform,
+        width,
+        height
       )
 
   static member UpdateVertices (vertices) (primitive: ShadedObject) : ShadedObject =
     match primitive with
-    | Quad(context, shader) -> Quad(
+    | Quad(context, shader, transform, width, height) -> Quad(
         ShadedObjectContext.UpdateVertices vertices context,
-        shader
+        shader,
+        transform,
+        width,
+        height
       )
 
   static member Update (vertices) (indices) (primitive: ShadedObject) : ShadedObject =
     match primitive with
-    | Quad(context, shader) -> Quad(
+    | Quad(context, shader, transform, width, height) -> Quad(
         ShadedObjectContext.Update vertices indices context,
-        shader
+        shader,
+        transform,
+        width,
+        height
       )
   
-  static member private UseMvpShader<'T> (config:Config<'T>) (shader:ShaderProgram) (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (scale:Vector3) (rotation:Vector3) (translation:Vector3) uniforms =
+  static member private UseMvpShader<'T> (config:Config<'T>) (shader:ShaderProgram) (viewMatrix:System.Numerics.Matrix4x4) (projectionMatrix:System.Numerics.Matrix4x4) (transform:Transform) uniforms =
     glUseProgram shader.Id
     let mvpUniform = glGetUniformLocation shader.Id "in_mvp"
 
-    let scaleMatrix = Matrix4x4.CreateScale(scale)
-    let rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(rotation.Y, rotation.X, rotation.Z)
-    let translationMatrix = Matrix4x4.CreateTranslation(translation)
+    let (x, y, z) = transform.Scale
+    let scaleMatrix = System.Numerics.Matrix4x4.CreateScale(x, y, z)
+    let (x, y, z) = transform.Rotation
+    let rotationMatrix = System.Numerics.Matrix4x4.CreateFromYawPitchRoll(y, x, z)
+    let (x, y, z) = transform.Translation
+    let translationMatrix = System.Numerics.Matrix4x4.CreateTranslation(x, y, z)
     let modelMatrix = scaleMatrix * rotationMatrix * translationMatrix
 
     let mvp = modelMatrix * viewMatrix * projectionMatrix
@@ -224,17 +264,15 @@ type ShadedObject =
       )
       uniforms |> ignore
   
-  static member Draw<'T> (config:Config<'T>) (viewMatrix:Matrix4x4) (projectionMatrix:Matrix4x4) (primitive:ShadedObject) (scale:Vector3) (rotation:Vector3) (translation:Vector3) (uniforms) =
+  static member Draw<'T> (config:Config<'T>) (viewMatrix:System.Numerics.Matrix4x4) (projectionMatrix:System.Numerics.Matrix4x4) (primitive:ShadedObject) (uniforms) =
     match primitive with
-    | Quad(context, shader) ->
+    | Quad(context, shader, transform, width, height) ->
       ShadedObject.UseMvpShader
         config
         shader
         viewMatrix
         projectionMatrix
-        scale
-        rotation
-        translation
+        transform
         (
           [
             Vector2Uniform(

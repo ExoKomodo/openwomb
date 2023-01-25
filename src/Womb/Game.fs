@@ -20,7 +20,7 @@ let play<'T>
       { Config.Default state with
           IsRunning = true
           DisplayConfig =
-            { DisplayConfig.Default with
+            { DisplayConfig.Default() with
                 Title = "Hello World"
                 Width = width
                 Height = height } }
@@ -52,6 +52,8 @@ let play<'T>
     | Some displayConfig ->
         info "Running initialization code"
         let config = config.InitHandler config
+        config.FrameTimer.Start()
+        config.OverallTimer.Start()
         let config =
           updateLoop
             { config with

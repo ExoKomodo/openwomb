@@ -6,10 +6,7 @@
     <RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 
-    <!-- TODO: Make the constants runtime-configurable if possible AND desired -->
-    <!--<DefineConstants>$(DefineConstants);DEBUG</DefineConstants>-->
-    <!--<DefineConstants>$(DefineConstants);TREAT_OPENGL_LINK_FAILURE_AS_ERROR</DefineConstants>-->
-    <!--<DefineConstants>$(DefineConstants);INLINE_LOGGER</DefineConstants>-->
+    <DefineConstants>$(DefineConstants);TREAT_OPENGL_LINK_FAILURE_AS_ERROR</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +20,7 @@
     <!-- Logging -->
     <Compile Include="Logging.fs" />
     <Compile Include="Lib/Types.fs" />
+    <Compile Include="Lib/Math.fs" />
     <!-- OpenGL -->
     <Compile Include="Backends/OpenGL/Api/Constants/OpenGL1_0.fs" />
     <Compile Include="Backends/OpenGL/Api/Constants/OpenGL1_1.fs" />

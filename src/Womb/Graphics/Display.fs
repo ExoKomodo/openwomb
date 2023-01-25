@@ -41,7 +41,7 @@ let private buildShader
   shaderPath
   shaderSource =
     match shaderCache.TryGetValue(shaderPath) with
-    | true, shader -> Some shader
+    | true, shader when shader.Source = shaderSource -> Some shader
     | _ ->
         let shaderTypeString = shaderTypeToString shaderType
         let shader = glCreateShader shaderType

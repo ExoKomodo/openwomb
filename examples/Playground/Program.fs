@@ -3,6 +3,7 @@ open System
 open System.Numerics
 open Womb
 open Womb.Graphics
+open Womb.Lib.Types
 open Womb.Types
 
 let DEFAULT_WIDTH = 800u
@@ -41,7 +42,11 @@ let private initHandler (config:Config<GameState>) =
     0u; 1u; 2u; // first triangle vertex order as array indices
     0u; 3u; 4u; // second triangle vertex order as array indices
   |]
-  match Primitives.ShadedObject.CreateQuad vertexPaths fragmentPaths vertices indices with
+  let transform =
+    { Transform.Default() with
+        Scale = (1.0f, 1.0f, 1.0f)
+        Rotation = (0.0f, 0.0f, 0.0f) }
+  match Primitives.ShadedObject.CreateQuad vertexPaths fragmentPaths transform 1.8f 1.0f with
   | Some primitive ->
     { config with
         State =
@@ -51,7 +56,7 @@ let private initHandler (config:Config<GameState>) =
     Logging.fail "Failed to create initial game state"
     config
 
-let private calculateMatrices cameraPosition cameraTarget =
+let private calculateMatrices (cameraPosition:Numerics.Vector3) (cameraTarget:Numerics.Vector3) =
   let viewMatrix = Matrix4x4.CreateLookAt(
     cameraPosition,
     cameraTarget,
@@ -61,22 +66,17 @@ let private calculateMatrices cameraPosition cameraTarget =
   (viewMatrix, projectionMatrix)
 
 let private loopHandler (config:Config<GameState>) =
-  let cameraPosition = new Vector3(0f, 0f, 1f)
-  let cameraTarget = new Vector3(0f, 0f, 0f)
+  let cameraPosition = new Numerics.Vector3(0f, 0f, 1f)
+  let cameraTarget = new Numerics.Vector3(0f, 0f, 0f)
   let (viewMatrix, projectionMatrix) = calculateMatrices cameraPosition cameraTarget
 
   let state = config.State
-  let scale = Vector3.One * 1.0f
-  let rotation = Vector3.UnitZ * 0.0f
   let displayConfig = Display.clear config.DisplayConfig
   Primitives.ShadedObject.Draw
     config
     viewMatrix
     projectionMatrix
     state.Triangles
-    scale
-    rotation
-    Vector3.Zero
     []
   { config with
       DisplayConfig = Display.swap displayConfig }

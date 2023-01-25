@@ -1,7 +1,6 @@
 module Womb.Engine.Internals
 
 open SDL2Bindings
-open System.Numerics
 open Womb.Graphics
 open Womb.Graphics.Types
 open Womb.Input.Types
@@ -16,7 +15,7 @@ let private handleWindowResize (config:Config<'T>) (event:SDL.SDL_WindowEvent) =
   let width = event.data1
   let height = event.data2
   
-  info $"Width: {width} height: {height}"
+  debug $"Resize to (width: {width}, height: {height})"
 
   glViewport
     0
@@ -75,11 +74,25 @@ let internal shutdown (config: Config<'T>) : Config<'T> =
   SDL.SDL_Quit()
   config.StopHandler config
 
+let clock config =
+  config.FrameTimer.Stop()
+  config.OverallTimer.Stop()
+  let (frame, overall) = (config.FrameTimer.Elapsed, config.OverallTimer.Elapsed)
+  config.FrameTimer.Reset()
+  config.FrameTimer.Start()
+  config.OverallTimer.Start()
+  { config with
+      FrameDelta = frame
+      OverallDelta = overall }
+
 let rec internal updateLoop<'T> (config:Config<'T>) : Config<'T> =
   if not config.IsRunning then
+    config.FrameTimer.Stop()
+    config.OverallTimer.Stop()
     config
   else
     pollInputs config
+      |> clock
       |> eventLoop
       |> config.LoopHandler
       |> updateLoop
