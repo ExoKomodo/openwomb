@@ -1,7 +1,6 @@
 module Womb.Engine.Internals
 
 open SDL2Bindings
-open System.Numerics
 open Womb.Graphics
 open Womb.Graphics.Types
 open Womb.Input.Types
@@ -16,7 +15,7 @@ let private handleWindowResize (config:Config<'T>) (event:SDL.SDL_WindowEvent) =
   let width = event.data1
   let height = event.data2
   
-  info $"Width: {width} height: {height}"
+  debug $"Resize to (width: {width}, height: {height})"
 
   glViewport
     0

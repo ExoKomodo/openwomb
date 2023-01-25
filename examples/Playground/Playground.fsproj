@@ -6,9 +6,7 @@
     <WarnOn>3390;$(WarnOn)</WarnOn>
     <RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
 
-    <DefineConstants>$(DefineConstants);DEBUG</DefineConstants>
-     <DefineConstants>$(DefineConstants);TREAT_OPENGL_LINK_FAILURE_AS_ERROR</DefineConstants>
-     <DefineConstants>$(DefineConstants);INLINE_LOGGER</DefineConstants> 
+    <DefineConstants>$(DefineConstants);TREAT_OPENGL_LINK_FAILURE_AS_ERROR</DefineConstants>
     <Configurations>Release;Debug</Configurations>
   </PropertyGroup>
 
@@ -24,14 +22,8 @@
     </Content>
     <Compile Include="Program.fs" />
     <ProjectReference Include="..\..\src\Womb\Womb.fsproj">
-      <Properties Condition="$(DefineConstants.Contains('DEBUG'))">
-        DefineConstants=$(DefineConstants);DEBUG
-      </Properties>
       <Properties Condition="$(DefineConstants.Contains('TREAT_OPENGL_LINK_FAILURE_AS_ERROR'))">
         DefineConstants=$(DefineConstants);TREAT_OPENGL_LINK_FAILURE_AS_ERROR
-      </Properties>
-      <Properties Condition="$(DefineConstants.Contains('INLINE_LOGGER'))">
-        DefineConstants=$(DefineConstants);INLINE_LOGGER
       </Properties>
     </ProjectReference>
     <PackageReference Include="Argu" Version="6.1.1">

@@ -6,10 +6,7 @@
     <RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 
-    <!-- TODO: Make the constants runtime-configurable if possible AND desired -->
-    <!--<DefineConstants>$(DefineConstants);DEBUG</DefineConstants>-->
-    <!--<DefineConstants>$(DefineConstants);TREAT_OPENGL_LINK_FAILURE_AS_ERROR</DefineConstants>-->
-    <!--<DefineConstants>$(DefineConstants);INLINE_LOGGER</DefineConstants>-->
+    <DefineConstants>$(DefineConstants);TREAT_OPENGL_LINK_FAILURE_AS_ERROR</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

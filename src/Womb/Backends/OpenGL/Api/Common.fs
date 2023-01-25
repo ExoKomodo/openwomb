@@ -33,10 +33,7 @@ let toFunctionName<'T when 'T :> Delegate>() =
   $"gl%s{typeof<'T>.Name}"
 
 let internal notLinked<'T when 'T :> Delegate>() =
-  $"%s{toFunctionName<'T>()} could not be linked. Check if you have the correct and most up-to-date OpenGL drivers."
-  #if DEBUG
-    + " Check the delegate type name for casing and spelling mistakes. A 'gl' prefix is attached to delegate Type names to generate the function name to link."
-  #endif
+  $"%s{toFunctionName<'T>()} could not be linked. Check if you have the correct and most up-to-date OpenGL drivers. Check the delegate type name for casing and spelling mistakes. A 'gl' prefix is attached to delegate Type names to generate the function name to link."
 
 type ProcAddressHandler = nativeint -> nativeint
 
@@ -49,9 +46,7 @@ let internal commonSetup
       | functionPtr when functionPtr <> IntPtr.Zero ->
           Marshal.GetDelegateForFunctionPointer<'T> functionPtr
       | _ ->
-          #if DEBUG
           warn (notLinked<'T>())
-          #endif
           #if TREAT_OPENGL_LINK_FAILURE_AS_ERROR
           notLinked<'T>()
             |> NotImplementedException
