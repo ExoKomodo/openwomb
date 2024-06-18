@@ -4,16 +4,15 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarnOn>3390;$(WarnOn)</WarnOn>
     <RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
-    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageLicenseFile>../../LICENSE.txt</PackageLicenseFile>
+    <PackageReadmeFile>../../README.md</PackageReadmeFile>
 
     <DefineConstants>$(DefineConstants);TREAT_OPENGL_LINK_FAILURE_AS_ERROR</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="../$(PackageLicenseFile)" Pack="true" PackagePath="$(PackageLicenseFile)"/>
-    <Content Include="../docs/*.md">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <None Include="$(PackageLicenseFile)" Pack="true" PackagePath="$(PackageLicenseFile)"/>
+    <None Include="$(PackageReadmeFile)" Pack="true" PackagePath="$(PackageReadmeFile)"/>
     
     <ProjectReference Include="..\ThirdParty\SDL2\SDL2Bindings.csproj" />
     
