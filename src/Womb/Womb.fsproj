@@ -3,7 +3,8 @@
     <PackageId>Womb</PackageId>
     <TargetFramework>net8.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <WarnOn>3390;$(WarnOn)</WarnOn>
+    <!-- Warns on whole record copies -->
+    <WarnOn>FS3560</WarnOn>
     <RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
