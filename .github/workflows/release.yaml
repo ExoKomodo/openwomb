@@ -28,13 +28,17 @@ jobs:
 
     - name: Pack Womb
       run: |
-        dotnet pack --no-restore --configuration Release -p:PackageVersion=${{ env.VERSION }}-${{ github.run_number }} src/Womb
+        dotnet pack \
+          --no-restore \
+          --configuration Release \
+          -p:PackageVersion=${{ env.VERSION }}-alpha${{ github.run_number }} \
+          src/Womb
 
     - name: Publish Package
       env:
         NUGET_PUSH_API_KEY: ${{ secrets.NUGET_PUSH_API_KEY }}
       run: |
         dotnet nuget push \
-          ./src/Womb/bin/Release/Womb.${{ env.VERSION }}-${{ github.run_number }}.nupkg \
+          ./src/Womb/bin/Release/Womb.${{ env.VERSION }}-alpha${{ github.run_number }}.nupkg \
           --api-key ${{ env.NUGET_PUSH_API_KEY }} \
           --source "${{ env.NUGET_API_SOURCE }}"
