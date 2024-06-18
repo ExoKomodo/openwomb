@@ -297,4 +297,3 @@ type ShadedObject =
         context.Indices.Length
         GL_UNSIGNED_INT
         GL_NULL
-

@@ -1,15 +1,7 @@
 module Womb.Graphics.Types
 
-open Womb.Backends.OpenGL.Api
-open Womb.Backends.OpenGL.Api.Constants
-open Womb.Lib.Types
-open Womb.Logging
-
-///////////
-// Types //
-///////////
-
 open SDL2Bindings
+open Womb.Lib.Types
 
 type DisplayConfig =
   { Width: uint;

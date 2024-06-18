@@ -21,7 +21,7 @@ let play<'T>
           IsRunning = true
           DisplayConfig =
             { DisplayConfig.Default() with
-                Title = "Hello World"
+                Title = title
                 Width = width
                 Height = height } }
     let config =
@@ -51,7 +51,8 @@ let play<'T>
         defaultReturn config state 1
     | Some displayConfig ->
         info "Running initialization code"
-        let config = config.InitHandler config
+        let config =
+          config.InitHandler config
         config.FrameTimer.Start()
         config.OverallTimer.Start()
         let config =

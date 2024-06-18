@@ -1,9 +1,6 @@
 [<AutoOpen>]
 module Womb.Backends.OpenGL.Api.Constants.OpenGL2_0
 
-////////////////////
-// GL_VERSION_2_0 //
-////////////////////
 [<Literal>]
 let GL_BLEND_EQUATION_RGB = 0x8009u
 [<Literal>]
