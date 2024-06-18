@@ -51,8 +51,7 @@ let private pollMouseState<'T> (config:Config<'T>) : MouseState =
     int(config.DisplayConfig.Height) - y
   )
 
-  { MouseState.Default with
-      Position = (adjustedX |> single, adjustedY |> single) }
+  { Position = (adjustedX |> single, adjustedY |> single) }
 
 let private pollInputs (config:Config<'T>) : Config<'T> =
   { config with
