@@ -2,9 +2,12 @@ name: Build
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
@@ -13,27 +16,35 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        configuration: [Debug, Release]
-        os: [ubuntu-latest]
-        # os: [windows-latest, macOS-latest, ubuntu-latest]
+        configuration:
+          - Debug
+          - Release
+        os:
+          - windows-latest
+          - macOS-latest
+          - ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 7.0.x
+        dotnet-version: 8.0.x
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: |
+        dotnet restore
 
     - name: Build Womb library [${{ matrix.configuration }}]
-      run: dotnet build --no-restore --configuration ${{ matrix.configuration }} src/Womb
+      run: |
+        dotnet build --no-restore --configuration ${{ matrix.configuration }} src/Womb
 
     - name: Build examples/Playground [${{ matrix.configuration }}]
-      run: dotnet build --no-restore --configuration ${{ matrix.configuration }} examples/Playground
+      run: |
+        dotnet build --no-restore --configuration ${{ matrix.configuration }} examples/Playground
 
     - name: Test [${{ matrix.configuration }}]
-      run: dotnet test --no-build
       if: ${{ matrix.configuration }} == 'Debug'
+      run: |
+        dotnet test --no-build

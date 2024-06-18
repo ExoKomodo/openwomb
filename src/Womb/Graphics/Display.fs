@@ -159,8 +159,6 @@ let private initializeGraphicsContext (config:DisplayConfig) =
         "<invalid:version>"
   info
     $"Found %s{renderer} from %s{vendor} with the following OpenGL driver: %s{version}"
-  info
-    $"Using %s{renderer} from %s{vendor} with the following OpenGL driver: %s{version}"
 
   glViewport
     0
