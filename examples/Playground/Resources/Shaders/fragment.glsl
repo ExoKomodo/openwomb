@@ -6,7 +6,7 @@ uniform vec2 in_viewport;
 
 void main()
 {
-  float scanline_height = in_viewport.y / 12f;
+  float scanline_height = in_viewport.y / 12.0f;
   if (int(gl_FragCoord.y / scanline_height) % 2 == 0)
   {
     out_frag_color = vec4(
