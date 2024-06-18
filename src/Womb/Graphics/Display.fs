@@ -8,10 +8,6 @@ open Womb.Backends.OpenGL.Api.Constants
 open Womb.Graphics.Types
 open Womb.Logging
 
-////////////
-// Module //
-////////////
-
 type ShaderInfo =
   { Id : uint;
     Path : string;
@@ -25,8 +21,8 @@ type ShaderInfo =
 let mutable shaderCache = Map.empty<string, ShaderInfo>
 let getShaderInfo shader =
   match Map.filter (
-    fun _ value -> value.Id = shader
-  ) shaderCache with
+    fun _ value -> value.Id = shader)
+    shaderCache with
   | items when Map.isEmpty items -> None
   | items -> (Map.values items).Single() |> Some
 
@@ -82,8 +78,7 @@ let private linkShaderPrograms shaders =
       fun shader ->
         match getShaderInfo shader with
         | Some shaderInfo -> debug $"Successfully linked shader program with shader (ID:{shaderInfo.Id}, Path:{shaderInfo.Path})"
-        | None -> ()
-    )
+        | None -> ())
     shaders |> ignore
   
   let success =
@@ -109,8 +104,7 @@ let compileShader vertexShaderPaths fragmentShaderPaths =
         vertexShaderPaths)
       (List.map
         (fun shaderPath -> shaderPath, GL_FRAGMENT_SHADER)
-        fragmentShaderPaths)
-  )
+        fragmentShaderPaths))
   let shaders = (List.choose  id
     (
       List.map
@@ -118,11 +112,8 @@ let compileShader vertexShaderPaths fragmentShaderPaths =
           fun (shaderPath, shaderType) ->
             match _compileShader shaderPath shaderType with
             | Some shaderInfo -> Some shaderInfo.Id
-            | None -> None
-        )
-        shaderInfo
-    )
-  )
+            | None -> None)
+        shaderInfo))
 
   match linkShaderPrograms shaders with
   | Some programId ->

@@ -44,10 +44,6 @@ let private handleEvent (config:Config<'T>) (event:SDL.SDL_Event) =
     | SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN -> config.EventHandler config event
   | _ -> config
 
-////////////
-// Module //
-////////////
-
 let private pollMouseState<'T> (config:Config<'T>) : MouseState =
   let (_, x, y) = SDL.SDL_GetMouseState()
   let (adjustedX, adjustedY) = (

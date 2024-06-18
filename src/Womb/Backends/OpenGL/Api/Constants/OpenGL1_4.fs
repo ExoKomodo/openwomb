@@ -1,9 +1,6 @@
 [<AutoOpen>]
 module Womb.Backends.OpenGL.Api.Constants.OpenGL1_4
 
-////////////////////
-// GL_VERSION_1_4 //
-////////////////////
 [<Literal>]
 let GL_BLEND_DST_RGB = 0x80C8u
 [<Literal>]
