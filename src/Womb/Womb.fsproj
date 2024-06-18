@@ -5,6 +5,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Warns on whole record copies -->
     <WarnOn>FS3560</WarnOn>
+    <OtherFlags>--warnaserror+ --strict-indentation+</OtherFlags>
     <RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
