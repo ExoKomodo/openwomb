@@ -6,7 +6,7 @@ Once completed, move the issue into [closed](./closed.md), and also close it wit
 
 ### [Issue Link](https://github.com/ExoKomodo/openwomb/issues/3)
 
-### Branch - [3_sprites](https://github.com/exokomodo/openwomb/tree/3_sprites)
+### [Branch](https://github.com/exokomodo/openwomb/tree/3_textures)
 
 ### Overview
 
@@ -20,10 +20,11 @@ This issue is to only implement the OpenGL way, as it provides a general-purpose
 ### Instructions
 
 1. Read the [OpenGL tutorial for rendering textures to a quad](https://learnopengl.com/Getting-started/Textures). Now prepare for implementation.
-1. Will require some changes to the [Primitives.ShadedObject.From function](./src/Womb/Graphics/Primitives.fs)
-1. Will require some changes to the [Primitives.ShadedObject.UseMvpShader function](./src/Womb/Graphics/Primitives.fs)
-1. Will require some changes to the [example shaders in the Playground example](./examples/Playground/Resources/Shaders/)
+1. Will require implementation of [glGenTextures in OpenGL1.1 API](../src/Womb/Backends/OpenGL/Api/OpenGL1_1.fs). Copy the pattern used with [glGenBuffers in OpenGL1.5 API](../src/Womb/Backends/OpenGL/Api/OpenGL1_5.fs), providing a helper for condition that `n=1`.
+1. Will require some changes to the [Primitives.ShadedObject.From function](../src/Womb/Graphics/Primitives.fs)
+1. Will require some changes to the [Primitives.ShadedObject.UseMvpShader function](../src/Womb/Graphics/Primitives.fs)
+1. Will require some changes to the [example shaders in the Playground example](../examples/Playground/Resources/Shaders/)
 
 ### Acceptance Criteria
 
-Be able to render an image to a shaded quad. To demonstrate this, modify the [Playground example](./examples/Playground) to render the [hello_world.bmp](./examples/Playground/Resources/Textures/hello_world.bmp). For proper completeness, demonstrate how we can color the texture in the shader as well.
+Be able to render an image to a shaded quad. To demonstrate this, modify the [Playground example](../examples/Playground) to render the [hello_world.bmp](../examples/Playground/Resources/Textures/hello_world.bmp). For proper completeness, demonstrate how we can color the texture in the shader as well.

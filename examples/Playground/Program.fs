@@ -26,13 +26,19 @@ type GameState =
       Triangles = Primitives.ShadedObject.Default }
 
 let private initHandler (config:Config<GameState>) =
-  let fragmentPaths = ["Resources/Shaders/fragment.glsl"]
-  let vertexPaths = ["Resources/Shaders/vertex.glsl"]
+  let fragmentPaths = ["Resources/Shaders/Texture/fragment.glsl"]
+  let vertexPaths = ["Resources/Shaders/Texture/vertex.glsl"]
   let transform =
     { Transform.Default() with
         Scale = (1.0f, 1.0f, 1.0f)
         Rotation = (0.0f, 0.0f, 0.0f) }
-  match Primitives.ShadedObject.CreateQuad vertexPaths fragmentPaths transform 1.8f 1.0f with
+  match Primitives.ShadedObject.CreateQuad
+    vertexPaths
+    fragmentPaths
+    transform
+    1.8f
+    1.0f
+    (Types.Texture2D.FromPath "Resources/Textures/smiley.png" |> Some) with
   | Some primitive ->
     { config with
         State.Triangles = primitive }

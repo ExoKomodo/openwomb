@@ -1,8 +1,11 @@
 [<AutoOpen>]
 module Womb.Backends.OpenGL.Api.OpenGL1_1
 
+#nowarn "9" // Unverifiable IL due to fixed expression and NativePtr library usage
+
 open Womb.Backends.OpenGL.Api.Common
 open Womb.Logging
+open Microsoft.FSharp.NativeInterop
 
 type private DrawArrays = delegate of uint * int * int -> unit
 let mutable private _glDrawArrays =
@@ -70,10 +73,18 @@ let mutable private _glDeleteTextures =
   DeleteTextures(fun _ _ -> warn (notLinked<DeleteTextures>()))
 let glDeleteTextures n textures = _glDeleteTextures.Invoke(n, textures)
 
-type private GenTextures = delegate of int * unativeint -> unit
+type private GenTextures = delegate of int * nativeptr<uint> -> unit
 let mutable private _glGenTextures =
   GenTextures(fun _ _ -> warn (notLinked<GenTextures>()))
-let glGenTextures n textures = _glGenTextures.Invoke(n, textures)
+let glGenTextures n =
+  let textures = Array.zeroCreate n
+  use ptr = fixed (&(textures.[0])) in
+    _glGenTextures.Invoke(n, ptr)
+  textures
+let glGenTexture() =
+  let ptr = NativePtr.stackalloc<uint> 1
+  _glGenTextures.Invoke(1, ptr)
+  NativePtr.get ptr 0
 
 type private IsTexture = delegate of uint -> unit
 let mutable private _glIsTexture =

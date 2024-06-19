@@ -4319,7 +4319,7 @@ namespace SDL2Bindings
 
         /* surface refers to an SDL_Surface* */
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void SDL_FreeSurface(IntPtr surface);
+        public static extern unsafe void SDL_FreeSurface(SDL_Surface* surface);
 
         /* surface refers to an SDL_Surface* */
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]

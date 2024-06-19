@@ -14,19 +14,50 @@ type ShadedObjectContext =
     VBO: uint;
     EBO: uint;
     Vertices: array<single>;
-    Indices: array<uint>; }
+    Indices: array<uint>;
+    Texture: uint; }
 
     static member Default () =
       { VAO = 0u
         VBO = 0u
         EBO = 0u
         Vertices = Array.empty
-        Indices = Array.empty }
+        Indices = Array.empty
+        Texture = 0u }
 
-    static member From (vertices) (indices) : ShadedObjectContext =
+    static member From (vertices) (indices) (textureOpt: option<Texture2D>) : ShadedObjectContext =
       let vao = glGenVertexArray()
       let vbo = glGenBuffer()
       let ebo = glGenBuffer()
+      let textureId =
+        match textureOpt with
+        | Some texture ->
+          let id = glGenTexture()
+          glBindTexture GL_TEXTURE_2D id
+
+          // NOTE: Eventually we will add texturing options for the individual texture, but for now let's set some defaults
+          glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_S (int GL_REPEAT)
+          glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_T (int GL_REPEAT)
+          glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER (int GL_LINEAR_MIPMAP_LINEAR)
+          glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER (int GL_LINEAR)
+
+          glTexImage2D
+            GL_TEXTURE_2D    // specifies the dimensional behavior of a texture: 1D is a line, 2D is a normal flat texture, 3D is a volumetric texture, like when a model is cut open and you want to show the interior of the object: https://stackoverflow.com/a/7329678
+            0                // mipmap level to use (clamped to 0 for now)
+            (int GL_RGB)     // format of output texture
+            texture.Width    // width of resulting texture
+            texture.Height   // height of resulting texture
+            0                // always 0, for legacy reasons
+            GL_RGB           // format of source image
+            GL_UNSIGNED_BYTE // datatype of source image
+            texture.Data     // image data
+          glGenerateMipmap GL_TEXTURE_2D
+
+          match texture.Surface with
+          | Some surface -> SDL2Bindings.SDL.SDL_FreeSurface(surface)
+          | None -> ()
+          id
+        | None -> 0u
 
       glBindVertexArray vao
 
@@ -55,11 +86,25 @@ type ShadedObjectContext =
         0
       glEnableVertexAttribArray 0u
 
+      match textureId with
+      | 0u ->
+          // TODO: This is not binding properly. Create a new buffer just for texture coordinates and bind it
+          glVertexAttribPointer
+            1u
+            2u
+            GL_FLOAT
+            false
+            2
+            4
+          glEnableVertexAttribArray 1u
+      | _ -> ()
+
       { VAO = vao
         VBO = vbo
         EBO = ebo
         Vertices = vertices
-        Indices = indices }
+        Indices = indices
+        Texture = textureId }
 
     static member UpdateIndices (indices) (context: ShadedObjectContext) : ShadedObjectContext =
       glBindBuffer
@@ -85,6 +130,8 @@ type ShadedObjectContext =
       { context with
           Vertices = vertices }
     
+    // TODO: Allow for dynamic update of texture
+    
     static member Update (vertices) (indices) (context: ShadedObjectContext) : ShadedObjectContext =
       ShadedObjectContext.UpdateVertices vertices context
         |> ShadedObjectContext.UpdateIndices indices
@@ -108,13 +155,14 @@ type ShadedObject =
         else
           None
 
-  static member CreateQuad vertexPaths fragmentPaths transform width height =
+  static member CreateQuad vertexPaths fragmentPaths transform width height texture =
     match (
       Display.compileShader
         vertexPaths
         fragmentPaths
     ) with
     | Some shader ->
+        // TODO: Construct tex coords
         let vertices = [|
           // bottom left
           -width / 2.0f; -height / 2.0f; 0.0f;
@@ -130,7 +178,7 @@ type ShadedObject =
           1u; 2u; 3u; // second triangle vertex order as array indices
         |]
         Quad(
-          ShadedObjectContext.From vertices indices,
+          ShadedObjectContext.From vertices indices texture,
           shader,
           transform,
           width,
@@ -160,6 +208,8 @@ type ShadedObject =
         height
       )
 
+  // TODO: Allow for dynamic update of texture
+
   static member Update (vertices) (indices) (primitive: ShadedObject) : ShadedObject =
     match primitive with
     | Quad(context, shader, transform, width, height) -> Quad(
@@ -184,7 +234,7 @@ type ShadedObject =
 
     let mvp = modelMatrix * viewMatrix * projectionMatrix
     glUniformMatrix4fv mvpUniform 1 mvp
-    
+
     List.map
       (
         fun uniformData ->
@@ -261,12 +311,24 @@ type ShadedObject =
               | 3 -> glUniform3ui location data[0] data[1] data[2]
               | 4 -> glUniform4ui location data[0] data[1] data[2] data[3]
               | len -> fail $"Unsupported UVectorUniform length {len} when trying to use shader"
+          | SamplerUniform(name, data) ->
+              let location = glGetUniformLocation shader.Id name
+              glUniform1i location data
       )
       uniforms |> ignore
   
   static member Draw<'T> (config:Config<'T>) (viewMatrix:System.Numerics.Matrix4x4) (projectionMatrix:System.Numerics.Matrix4x4) (primitive:ShadedObject) (uniforms) =
     match primitive with
     | Quad(context, shader, transform, width, height) ->
+      let all_uniforms = 
+        match context.Texture with
+        | 0u -> uniforms
+        | _ -> [
+          SamplerUniform(
+            "in_texture",
+            0
+          )
+        ] @ uniforms
       ShadedObject.UseMvpShader
         config
         shader
@@ -286,8 +348,13 @@ type ShadedObject =
                 config.DisplayConfig.Height |> single
               )
             );
-          ] @ uniforms )
-      
+          ] @ all_uniforms )
+
+      match context.Texture with
+      | 0u -> ()
+      | _ ->
+        glActiveTexture GL_TEXTURE0
+        glBindTexture GL_TEXTURE_2D context.Texture
       glBindVertexArray context.VAO
       glBindBuffer
         GL_ELEMENT_ARRAY_BUFFER
