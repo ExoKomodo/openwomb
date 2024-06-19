@@ -6,7 +6,7 @@ Once completed, move the issue into [closed](./closed.md), and also close it wit
 
 ### [Issue Link](https://github.com/ExoKomodo/openwomb/issues/3)
 
-### Branch - [3_sprites](https://github.com/exokomodo/openwomb/tree/3_sprites)
+### [Branch](https://github.com/exokomodo/openwomb/tree/3_textures)
 
 ### Overview
 
