@@ -14,19 +14,49 @@ type ShadedObjectContext =
     VBO: uint;
     EBO: uint;
     Vertices: array<single>;
-    Indices: array<uint>; }
+    Indices: array<uint>;
+    Texture: option<uint>; }
 
     static member Default () =
       { VAO = 0u
         VBO = 0u
         EBO = 0u
         Vertices = Array.empty
-        Indices = Array.empty }
+        Indices = Array.empty
+        Texture = None }
 
-    static member From (vertices) (indices) : ShadedObjectContext =
+    static member From (vertices) (indices) (textureOpt: option<SDL2Bindings.SDL.SDL_Surface>) : ShadedObjectContext =
       let vao = glGenVertexArray()
       let vbo = glGenBuffer()
       let ebo = glGenBuffer()
+      let textureId =
+        match textureOpt with
+        | Some _ ->
+          let id = glGenTexture()
+          glBindTexture GL_TEXTURE_2D id
+
+          // TODO: Fix the type errors
+          // NOTE: Eventually we will add texturing options for the individual texture, but for now let's set some defaults
+          // NOTE: set the texture wrapping/filtering options (on the currently bound texture object)
+          // glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_REPEAT
+          // glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_REPEAT
+          // glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR_MIPMAP_LINEAR
+          // glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR
+
+          // TODO: Generate the texture and mipmap
+          // NOTE: glTexImage2d explanation...
+          // The first argument specifies the texture target; setting this to GL_TEXTURE_2D means this operation will generate a texture on the currently bound texture object at the same target (so any textures bound to targets GL_TEXTURE_1D or GL_TEXTURE_3D will not be affected).
+          // The second argument specifies the mipmap level for which we want to create a texture for if you want to set each mipmap level manually, but we'll leave it at the base level which is 0.
+          // The third argument tells OpenGL in what kind of format we want to store the texture. Our image has only RGB values so we'll store the texture with RGB values as well.
+          // The 4th and 5th argument sets the width and height of the resulting texture. We stored those earlier when loading the image so we'll use the corresponding variables.
+          // The next argument should always be 0 (some legacy stuff).
+          // The 7th and 8th argument specify the format and datatype of the source image. We loaded the image with RGB values and stored them as chars (bytes) so we'll pass in the corresponding values.
+          // The last argument is the actual image data.
+          // glTexImage2D GL_TEXTURE_2D 0 GL_RGB width height 0 GL_RGB GL_UNSIGNED_BYTE data
+          glGenerateMipmap GL_TEXTURE_2D
+          // TODO: Free the image data from SDL
+          id
+        | None -> 0u
 
       glBindVertexArray vao
 
@@ -46,6 +76,7 @@ type ShadedObjectContext =
         indices
         GL_STATIC_DRAW
 
+      // TODO: Adjust the stride parameter if a texture is present
       glVertexAttribPointer
         0u
         3u
@@ -59,7 +90,8 @@ type ShadedObjectContext =
         VBO = vbo
         EBO = ebo
         Vertices = vertices
-        Indices = indices }
+        Indices = indices
+        Texture = None }
 
     static member UpdateIndices (indices) (context: ShadedObjectContext) : ShadedObjectContext =
       glBindBuffer
@@ -84,6 +116,8 @@ type ShadedObjectContext =
 
       { context with
           Vertices = vertices }
+    
+    // TODO: Allow for dynamic update of texture
     
     static member Update (vertices) (indices) (context: ShadedObjectContext) : ShadedObjectContext =
       ShadedObjectContext.UpdateVertices vertices context
@@ -160,6 +194,8 @@ type ShadedObject =
         height
       )
 
+  // TODO: Allow for dynamic update of texture
+
   static member Update (vertices) (indices) (primitive: ShadedObject) : ShadedObject =
     match primitive with
     | Quad(context, shader, transform, width, height) -> Quad(
@@ -185,6 +221,7 @@ type ShadedObject =
     let mvp = modelMatrix * viewMatrix * projectionMatrix
     glUniformMatrix4fv mvpUniform 1 mvp
     
+    // TODO: See if texture data or coords are best passed through uniforms. If so, modify this, otherwise, leave it be
     List.map
       (
         fun uniformData ->
@@ -287,7 +324,11 @@ type ShadedObject =
               )
             );
           ] @ uniforms )
-      
+
+      match context.Texture with
+      | Some texture ->
+        glBindTexture GL_TEXTURE_2D texture
+      | None -> ()
       glBindVertexArray context.VAO
       glBindBuffer
         GL_ELEMENT_ARRAY_BUFFER
