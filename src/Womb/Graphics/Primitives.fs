@@ -142,7 +142,7 @@ type ShadedObject =
         else
           None
 
-  static member CreateQuad vertexPaths fragmentPaths transform width height =
+  static member CreateQuad vertexPaths fragmentPaths transform width height texture =
     match (
       Display.compileShader
         vertexPaths
@@ -164,7 +164,7 @@ type ShadedObject =
           1u; 2u; 3u; // second triangle vertex order as array indices
         |]
         Quad(
-          ShadedObjectContext.From vertices indices,
+          ShadedObjectContext.From vertices indices texture,
           shader,
           transform,
           width,
