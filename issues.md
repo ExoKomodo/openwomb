@@ -16,7 +16,9 @@ To check all open issues on Github, [go here](https://github.com/ExoKomodo/openw
 
 - [Render textures](https://github.com/ExoKomodo/openwomb/issues/3) - [3_sprites](https://github.com/exokomodo/openwomb/tree/3_sprites)
     1. [OpenGL tutorial for rendering textures to a quad](https://learnopengl.com/Getting-started/Textures)
-    1. Suggest you start by adding to the [Primitives.ShadedObject type](./src/Womb/Graphics/Primitives.fs). You may not need to make modifications anywhere else
+    1. Will require some changes to the [Primitives.ShadedObject.From function](./src/Womb/Graphics/Primitives.fs)
+    1. Will require some changes to the [Primitives.ShadedObject.UseMvpShader function](./src/Womb/Graphics/Primitives.fs)
+    1. Will require some changes to the [shaders in the Playground example](./examples/Playground/Resources/Shaders/)
 
 ## Closed
 
