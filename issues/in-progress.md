@@ -20,10 +20,10 @@ This issue is to only implement the OpenGL way, as it provides a general-purpose
 ### Instructions
 
 1. Read the [OpenGL tutorial for rendering textures to a quad](https://learnopengl.com/Getting-started/Textures). Now prepare for implementation.
-1. Will require some changes to the [Primitives.ShadedObject.From function](./src/Womb/Graphics/Primitives.fs)
-1. Will require some changes to the [Primitives.ShadedObject.UseMvpShader function](./src/Womb/Graphics/Primitives.fs)
-1. Will require some changes to the [example shaders in the Playground example](./examples/Playground/Resources/Shaders/)
+1. Will require some changes to the [Primitives.ShadedObject.From function](../src/Womb/Graphics/Primitives.fs)
+1. Will require some changes to the [Primitives.ShadedObject.UseMvpShader function](../src/Womb/Graphics/Primitives.fs)
+1. Will require some changes to the [example shaders in the Playground example](../examples/Playground/Resources/Shaders/)
 
 ### Acceptance Criteria
 
-Be able to render an image to a shaded quad. To demonstrate this, modify the [Playground example](./examples/Playground) to render the [hello_world.bmp](./examples/Playground/Resources/Textures/hello_world.bmp). For proper completeness, demonstrate how we can color the texture in the shader as well.
+Be able to render an image to a shaded quad. To demonstrate this, modify the [Playground example](../examples/Playground) to render the [hello_world.bmp](../examples/Playground/Resources/Textures/hello_world.bmp). For proper completeness, demonstrate how we can color the texture in the shader as well.
