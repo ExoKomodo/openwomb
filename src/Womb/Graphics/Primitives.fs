@@ -15,7 +15,7 @@ type ShadedObjectContext =
     EBO: uint;
     Vertices: array<single>;
     Indices: array<uint>;
-    Texture: option<uint>; }
+    Texture: uint; }
 
     static member Default () =
       { VAO = 0u
@@ -23,38 +23,39 @@ type ShadedObjectContext =
         EBO = 0u
         Vertices = Array.empty
         Indices = Array.empty
-        Texture = None }
+        Texture = 0u }
 
-    static member From (vertices) (indices) (textureOpt: option<SDL2Bindings.SDL.SDL_Surface>) : ShadedObjectContext =
+    static member From (vertices) (indices) (textureOpt: option<Texture2D>) : ShadedObjectContext =
       let vao = glGenVertexArray()
       let vbo = glGenBuffer()
       let ebo = glGenBuffer()
       let textureId =
         match textureOpt with
-        | Some _ ->
+        | Some texture ->
           let id = glGenTexture()
           glBindTexture GL_TEXTURE_2D id
 
-          // TODO: Fix the type errors
           // NOTE: Eventually we will add texturing options for the individual texture, but for now let's set some defaults
-          // NOTE: set the texture wrapping/filtering options (on the currently bound texture object)
-          // glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_REPEAT
-          // glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_REPEAT
-          // glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR_MIPMAP_LINEAR
-          // glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR
+          glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_S (int GL_REPEAT)
+          glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_T (int GL_REPEAT)
+          glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER (int GL_LINEAR_MIPMAP_LINEAR)
+          glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER (int GL_LINEAR)
 
-          // TODO: Generate the texture and mipmap
-          // NOTE: glTexImage2d explanation...
-          // The first argument specifies the texture target; setting this to GL_TEXTURE_2D means this operation will generate a texture on the currently bound texture object at the same target (so any textures bound to targets GL_TEXTURE_1D or GL_TEXTURE_3D will not be affected).
-          // The second argument specifies the mipmap level for which we want to create a texture for if you want to set each mipmap level manually, but we'll leave it at the base level which is 0.
-          // The third argument tells OpenGL in what kind of format we want to store the texture. Our image has only RGB values so we'll store the texture with RGB values as well.
-          // The 4th and 5th argument sets the width and height of the resulting texture. We stored those earlier when loading the image so we'll use the corresponding variables.
-          // The next argument should always be 0 (some legacy stuff).
-          // The 7th and 8th argument specify the format and datatype of the source image. We loaded the image with RGB values and stored them as chars (bytes) so we'll pass in the corresponding values.
-          // The last argument is the actual image data.
-          // glTexImage2D GL_TEXTURE_2D 0 GL_RGB width height 0 GL_RGB GL_UNSIGNED_BYTE data
+          glTexImage2D
+            GL_TEXTURE_2D    // specifies the dimensional behavior of a texture: 1D is a line, 2D is a normal flat texture, 3D is a volumetric texture, like when a model is cut open and you want to show the interior of the object: https://stackoverflow.com/a/7329678
+            0                // mipmap level to use (clamped to 0 for now)
+            (int GL_RGB)     // format of output texture
+            texture.Width    // width of resulting texture
+            texture.Height   // height of resulting texture
+            0                // always 0, for legacy reasons
+            GL_RGB           // format of source image
+            GL_UNSIGNED_BYTE // datatype of source image
+            texture.Data     // image data
           glGenerateMipmap GL_TEXTURE_2D
-          // TODO: Free the image data from SDL
+
+          match texture.Surface with
+          | Some surface -> SDL2Bindings.SDL.SDL_FreeSurface(surface)
+          | None -> ()
           id
         | None -> 0u
 
@@ -76,7 +77,6 @@ type ShadedObjectContext =
         indices
         GL_STATIC_DRAW
 
-      // TODO: Adjust the stride parameter if a texture is present
       glVertexAttribPointer
         0u
         3u
@@ -86,12 +86,25 @@ type ShadedObjectContext =
         0
       glEnableVertexAttribArray 0u
 
+      match textureId with
+      | 0u ->
+          // TODO: This is not binding properly. Create a new buffer just for texture coordinates and bind it
+          glVertexAttribPointer
+            1u
+            2u
+            GL_FLOAT
+            false
+            2
+            4
+          glEnableVertexAttribArray 1u
+      | _ -> ()
+
       { VAO = vao
         VBO = vbo
         EBO = ebo
         Vertices = vertices
         Indices = indices
-        Texture = None }
+        Texture = textureId }
 
     static member UpdateIndices (indices) (context: ShadedObjectContext) : ShadedObjectContext =
       glBindBuffer
@@ -149,6 +162,7 @@ type ShadedObject =
         fragmentPaths
     ) with
     | Some shader ->
+        // TODO: Construct tex coords
         let vertices = [|
           // bottom left
           -width / 2.0f; -height / 2.0f; 0.0f;
@@ -220,8 +234,7 @@ type ShadedObject =
 
     let mvp = modelMatrix * viewMatrix * projectionMatrix
     glUniformMatrix4fv mvpUniform 1 mvp
-    
-    // TODO: See if texture data or coords are best passed through uniforms. If so, modify this, otherwise, leave it be
+
     List.map
       (
         fun uniformData ->
@@ -298,12 +311,24 @@ type ShadedObject =
               | 3 -> glUniform3ui location data[0] data[1] data[2]
               | 4 -> glUniform4ui location data[0] data[1] data[2] data[3]
               | len -> fail $"Unsupported UVectorUniform length {len} when trying to use shader"
+          | SamplerUniform(name, data) ->
+              let location = glGetUniformLocation shader.Id name
+              glUniform1i location data
       )
       uniforms |> ignore
   
   static member Draw<'T> (config:Config<'T>) (viewMatrix:System.Numerics.Matrix4x4) (projectionMatrix:System.Numerics.Matrix4x4) (primitive:ShadedObject) (uniforms) =
     match primitive with
     | Quad(context, shader, transform, width, height) ->
+      let all_uniforms = 
+        match context.Texture with
+        | 0u -> uniforms
+        | _ -> [
+          SamplerUniform(
+            "in_texture",
+            0
+          )
+        ] @ uniforms
       ShadedObject.UseMvpShader
         config
         shader
@@ -323,12 +348,13 @@ type ShadedObject =
                 config.DisplayConfig.Height |> single
               )
             );
-          ] @ uniforms )
+          ] @ all_uniforms )
 
       match context.Texture with
-      | Some texture ->
-        glBindTexture GL_TEXTURE_2D texture
-      | None -> ()
+      | 0u -> ()
+      | _ ->
+        glActiveTexture GL_TEXTURE0
+        glBindTexture GL_TEXTURE_2D context.Texture
       glBindVertexArray context.VAO
       glBindBuffer
         GL_ELEMENT_ARRAY_BUFFER

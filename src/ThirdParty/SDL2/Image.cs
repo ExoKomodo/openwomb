@@ -89,13 +89,13 @@ namespace SDL2Bindings
 
         /* IntPtr refers to an SDL_Surface* */
         [DllImport(nativeLibName, EntryPoint = "IMG_Load", CallingConvention = CallingConvention.Cdecl)]
-        private static extern unsafe IntPtr INTERNAL_IMG_Load(
+        private static extern unsafe SDL.SDL_Surface* INTERNAL_IMG_Load(
             byte* file
         );
-        public static unsafe IntPtr IMG_Load(string file)
+        public static unsafe SDL.SDL_Surface* IMG_Load(string file)
         {
             byte* utf8File = SDL.Utf8EncodeHeap(file);
-            IntPtr handle = INTERNAL_IMG_Load(
+            SDL.SDL_Surface* handle = INTERNAL_IMG_Load(
                 utf8File
             );
             Marshal.FreeHGlobal((IntPtr)utf8File);
