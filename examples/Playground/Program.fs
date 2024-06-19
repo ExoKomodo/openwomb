@@ -26,22 +26,8 @@ type GameState =
       Triangles = Primitives.ShadedObject.Default }
 
 let private initHandler (config:Config<GameState>) =
-  let state = config.State
   let fragmentPaths = ["Resources/Shaders/fragment.glsl"]
   let vertexPaths = ["Resources/Shaders/vertex.glsl"]
-  let vertices = [|
-    0.0f; -0.5f; 0.0f;  // shared vertex
-    // first triangle
-    -0.9f; -0.5f; 0.0f; // left vertex
-    -0.45f; 0.5f; 0.0f; // top vertex
-    // second triangle
-    0.9f; -0.5f; 0.0f;  // right vertex
-    0.45f; 0.5f; 0.0f;  // top vertex
-  |]
-  let indices = [|
-    0u; 1u; 2u; // first triangle vertex order as array indices
-    0u; 3u; 4u; // second triangle vertex order as array indices
-  |]
   let transform =
     { Transform.Default() with
         Scale = (1.0f, 1.0f, 1.0f)
@@ -49,9 +35,7 @@ let private initHandler (config:Config<GameState>) =
   match Primitives.ShadedObject.CreateQuad vertexPaths fragmentPaths transform 1.8f 1.0f with
   | Some primitive ->
     { config with
-        State =
-          { GameState.Default with
-              Triangles = primitive }}
+        State.Triangles = primitive }
   | None ->
     Logging.fail "Failed to create initial game state"
     config
