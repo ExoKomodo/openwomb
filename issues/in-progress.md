@@ -20,6 +20,7 @@ This issue is to only implement the OpenGL way, as it provides a general-purpose
 ### Instructions
 
 1. Read the [OpenGL tutorial for rendering textures to a quad](https://learnopengl.com/Getting-started/Textures). Now prepare for implementation.
+1. Will require implementation of [glGenTextures in OpenGL1.1 API](../src/Womb/Backends/OpenGL/Api/OpenGL1_1.fs). Copy the pattern used with [glGenBuffers in OpenGL1.5 API](../src/Womb/Backends/OpenGL/Api/OpenGL1_5.fs), providing a helper for condition that `n=1`.
 1. Will require some changes to the [Primitives.ShadedObject.From function](../src/Womb/Graphics/Primitives.fs)
 1. Will require some changes to the [Primitives.ShadedObject.UseMvpShader function](../src/Womb/Graphics/Primitives.fs)
 1. Will require some changes to the [example shaders in the Playground example](../examples/Playground/Resources/Shaders/)
